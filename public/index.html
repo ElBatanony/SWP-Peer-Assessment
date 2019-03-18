@@ -30,10 +30,11 @@
 <body>
     <section class="section">
         <div class="container">
-            <h1 class="title">
-                SWP Peer Assessment
-            </h1>
+            <h1 class="title"> SWP Peer Assessment </h1>
 
+            <p>Welcome to the Peer Assessment software project!</p>
+
+            <p id="greetingorlogin"></p>
         </div>
     </section>
 </body>
@@ -41,9 +42,11 @@
 <script>
   firebase.auth().onAuthStateChanged(function (user) {
       if (user) {
+        document.getElementById("greetingorlogin").innerHTML = `Hello, ${user.displayName}!`
       } else {
         // User is signed out.
-        window.location.href = "login.html";
+        document.getElementById("greetingorlogin").innerHTML = `<a class="button is-primary is-rounded">Rounded</a>`
+        //window.location.href = "login";
       }
   });
 </script>
