@@ -25,6 +25,8 @@
 
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
 </head>
 
 <body>
@@ -34,19 +36,34 @@
 
             <p>Welcome to the Peer Assessment software project!</p>
 
+            <div id="app">
+              {{ message }}
+            </div>
+
             <p id="greetingorlogin"></p>
         </div>
     </section>
 </body>
 
 <script>
+  var app = new Vue({
+    el: '#app',
+    data: {
+      message: 'Hello Vue!'
+    }
+  })
+
+  function goToLogin() {
+    window.location.href = "login";
+  }
+
   firebase.auth().onAuthStateChanged(function (user) {
       if (user) {
         document.getElementById("greetingorlogin").innerHTML = `Hello, ${user.displayName}!`
       } else {
         // User is signed out.
-        document.getElementById("greetingorlogin").innerHTML = `<a class="button is-primary is-rounded">Rounded</a>`
-        //window.location.href = "login";
+        document.getElementById("greetingorlogin").innerHTML = `<a class="button is-primary is-rounded" onclick="goToLogin()">Sign in</a>`
+        //
       }
   });
 </script>

@@ -25,6 +25,8 @@
 
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
 </head>
 
 <body>
@@ -32,6 +34,14 @@
         <div class="container">
             <h1 class="title">SWP Peer Assessment</h1>
             
+            <div id="app">
+                
+                    <div v-for="assignment in assignments">
+                        <h1 class="title is-3">{{ assignment.name }}</h1>
+                        <h1 class="subtitle is-3">{{ assignment.description }}</h1>
+                    </div>
+            </div>
+
             <div id="assignmentsDisplay"></div>
 
         </div>
@@ -39,6 +49,15 @@
 </body>
 
 <script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            message: 'Hello Vue!',
+            assignments: [],
+        }
+    })
+
     firebase.auth().onAuthStateChanged(function (user) {
         if (user) {
         } else {
@@ -50,12 +69,10 @@
     var db = firebase.firestore();
 
     db.collection("assignments").get().then(function (querySnapshot) {
+        
         querySnapshot.forEach(function (doc) {
             // doc.data() is never undefined for query doc snapshots
-
-            document.getElementById("assignmentsDisplay").innerHTML +=
-            `<h1 class="title is-3">${ doc.data().name }</h1>
-            <h1 class="subtitle is-3">${ doc.data().description }</h1>`;
+            app.assignments.push( doc.data() );
         });
     });
 </script>
