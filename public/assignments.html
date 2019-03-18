@@ -30,22 +30,34 @@
 <body>
     <section class="section">
         <div class="container">
-            <h1 class="title">
-                SWP Peer Assessment
-            </h1>
+            <h1 class="title">SWP Peer Assessment</h1>
+            
+            <div id="assignmentsDisplay"></div>
 
         </div>
     </section>
 </body>
 
 <script>
-  firebase.auth().onAuthStateChanged(function (user) {
-      if (user) {
-      } else {
-        // User is signed out.
-        window.location.href = "login.html";
-      }
-  });
+    firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+        } else {
+            // User is signed out.
+            window.location.href = "login.html";
+        }
+    });
+
+    var db = firebase.firestore();
+
+    db.collection("assignments").get().then(function (querySnapshot) {
+        querySnapshot.forEach(function (doc) {
+            // doc.data() is never undefined for query doc snapshots
+
+            document.getElementById("assignmentsDisplay").innerHTML +=
+            `<h1 class="title is-3">${ doc.data().name }</h1>
+            <h1 class="subtitle is-3">${ doc.data().description }</h1>`;
+        });
+    });
 </script>
 
 </html>
