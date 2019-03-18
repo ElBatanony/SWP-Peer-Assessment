@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title></title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+        <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+        <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
+        <script>
+            // Initialize Firebase
+            var config = {
+                apiKey: "AIzaSyBoFhrw9RehDmHHFgOV4aFi3TrBfT_PY48",
+                authDomain: "swp-peer-assessment.firebaseapp.com",
+                databaseURL: "https://swp-peer-assessment.firebaseio.com",
+                projectId: "swp-peer-assessment",
+                storageBucket: "swp-peer-assessment.appspot.com",
+                messagingSenderId: "998218435509"
+            };
+            firebase.initializeApp(config);
+    
+        </script>
+    </head>
+
+    <body>
+    <section class="section" id="header">
+        <div class="container">
+            <h1 class="title" id="subject">Loading...</h1>
+            <h2 class="subtitle" id="assignment">Loading...</h2>
+        </div>
+
+        <div class="container" id="description">Loading...</div>
+    </section>
+    <section class="section" id="upload">
+        <label class="upload-group">
+            Upload file
+            <input type="file" class="upload-group" id="solution">
+        </label>
+        <button type="button" class="btn btn-primary" id="uploadButton" onclick="uploadFile()">Submit</button>
+    </section>
+    </body>
+
+<script>
+    let userId;
+
+    firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+            userId = user.uid;
+        } else {
+            window.location.href = "login";
+        }
+    });
+
+    let db = firebase.firestore();
+
+    let search = window.location.search.toString();
+    let searchId = search.substring(4, search.length);
+
+    let subject;
+    let name;
+    let description;
+
+    db.collection("assignments").doc("id" + searchId).get()
+        .then(snapshot => {
+            if (snapshot.data()) {
+                subject = snapshot.data().subject;
+                name = snapshot.data().name;
+                description = snapshot.data().description;
+
+                document.title = subject + " " + name;
+                document.getElementById('subject').innerHTML = subject;
+                document.getElementById('assignment').innerHTML = name;
+                document.getElementById('description').innerHTML = description;
+            }
+            else {
+                window.location.replace(window.location.origin + "/404");
+            }
+        });    
+
+    function uploadFile() {
+        let file = document.getElementById("solution");
+        if (file.files.length) {
+            let selectedFile = file.files[0];
+
+            let storageRef = firebase.storage().ref();
+            let subjectRef = storageRef.child("id" + searchId);
+            let objectRef = subjectRef.child(selectedFile.name);
+
+            let uploadTask = objectRef.put(selectedFile)
+                .then(() => {
+                    console.log('File uploaded');
+                });
+        };
+    }
+
+</script>
+
+</html>
