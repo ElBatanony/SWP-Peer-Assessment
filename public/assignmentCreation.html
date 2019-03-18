@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SWP Peer Assessment</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBoFhrw9RehDmHHFgOV4aFi3TrBfT_PY48",
+            authDomain: "swp-peer-assessment.firebaseapp.com",
+            databaseURL: "https://swp-peer-assessment.firebaseio.com",
+            projectId: "swp-peer-assessment",
+            storageBucket: "swp-peer-assessment.appspot.com",
+            messagingSenderId: "998218435509"
+        };
+        firebase.initializeApp(config);
+
+    </script>
+
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title">
+                New Assignment
+            </h1>
+
+            <div class="field">
+                <label class="label">Name</label>
+                <div class="control">
+                  <input id="assignmentName" class="input" type="text" placeholder="Enter the name of the assignment">
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Description</label>
+                <div class="control">
+                  <textarea id="assignmentDesc" class="textarea" placeholder="Enter the description of the assignment"></textarea>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Course</label>
+                <div class="control">
+                  <div class="select">
+                    <select id="course-select" onchange="courses(this.value)">
+                    </select>
+                  </div>
+                </div>
+            </div>
+
+            <div class="field" id="subject">
+                    <label class="label">Subject</label>
+                    <div class="control">
+                      <div class="select">
+                        <select id="subject-select">
+                        </select>
+                      </div>
+                    </div>
+            </div>
+            <div class="buttons level-right">
+                <span class="button is-danger" onclick="goToAssignments()">Cancel</span>
+              <span class="button is-success" onclick="SubmitAssignment()">Add</span>
+              
+            </div>
+        </div>
+    </section>
+</body>
+
+<script>
+        function goToAssignments() {
+          window.location.href = "assignments";
+        }
+
+        function courses (courseName)
+        {
+            subSelect = document.getElementById('subject-select');
+            var db = firebase.firestore();
+            db.collection("courses").get().then(function(querySnapshot) {
+                querySnapshot.forEach(function(doc) {
+                    // doc.data() is never undefined for query doc snapshots
+                    if(doc.data().name == courseName)
+                    {
+                      subSelect.innerHTML='';
+                        doc.data().subjects.forEach(function(sub){
+                            subSelect.options[subSelect.options.length] = new Option(sub, sub);
+                        });
+                    }
+                }
+                )});
+        }
+    </script>
+
+<script>
+    courseSelect = document.getElementById('course-select');
+    var db = firebase.firestore();
+    db.collection("courses").get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+            // doc.data() is never undefined for query doc snapshots
+            courseSelect.options[courseSelect.options.length] = new Option(doc.data().name, doc.data().name);
+        });
+        courseSelect.options[0].selected = true;
+        courses(courseSelect.value);
+    });
+</script>
+
+<script>
+  function SubmitAssignment()
+  {
+    nameAssi = document.getElementById('assignmentName');
+    descAssi = document.getElementById('assignmentDesc');
+    courseSelect = document.getElementById('course-select');
+    subSelect = document.getElementById('subject-select');
+
+    var db = firebase.firestore();
+    db.collection("assignments").add({
+    name: nameAssi.value,
+    description: descAssi.value,
+    course: courseSelect.value,
+    subject: subSelect.value
+    })
+    .then(function(docRef) {
+        console.log("Document written with ID: ", docRef.id);
+        window.location.href = "assignments";
+    })
+    .catch(function(error) {
+        console.error("Error adding document: ", error);
+    });
+  }
+</script>
+
+</html>
+
+
