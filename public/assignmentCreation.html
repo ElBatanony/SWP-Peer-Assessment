@@ -80,11 +80,6 @@
 </body>
 
 <script>
-
-  const app = new Vue({
-    el: '#app',
-  })
-
   function goToAssignments() {
     window.location.href = "assignments";
   }      
@@ -102,7 +97,7 @@
                   doc.data().subjects.forEach(function(sub){
                       subSelect.options[subSelect.options.length] = new Option(sub, sub);
                   });  
-                subSelect.value =  subSelect.options[0].value;
+                subSelect.options[0].selected = true;
               }
           }
           )});

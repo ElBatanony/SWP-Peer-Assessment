@@ -33,7 +33,7 @@
             
             <div id="app">
                 <h1 class="title">
-                    New Assignment
+                    Assignment
                 </h1>
 
                 <div class="field">
@@ -156,14 +156,14 @@
                     i = 0;
                     index = 0;
                     doc.data().subjects.forEach(function(sub){
-                        if(curDoc.data().subject == doc.data().name)
+                        if(curDoc.data().subject == sub)
                         {
                             index = i;
                         }
                         subSelect.options[subSelect.options.length] = new Option(sub, sub);
                         i = i + 1;
                     });  
-                    subSelect.value =  subSelect.options[index].value;
+                    subSelect.options[index].selected = true;
                 }
             }
             )});
