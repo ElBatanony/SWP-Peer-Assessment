@@ -78,6 +78,8 @@
             }
         });    
 
+        let file = document.getElementById("solution");
+
     function uploadFile() {
         let file = document.getElementById("solution");
         if (file.files.length) {
@@ -89,7 +91,7 @@
 
             let uploadTask = objectRef.put(selectedFile)
                 .then(() => {
-                    console.log('File uploaded');
+                    file.value = "";
                 });
         };
     }
