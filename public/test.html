@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Add assignment - Peer Assessment SWP</title>
+    <title>SWP Peer Assessment</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
 
@@ -24,53 +24,18 @@
         firebase.initializeApp(config);
 
     </script>
-
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="utils.js"></script>
-
-    <link rel="icon" href="peer-review-icon.png">
 </head>
 
-<body> <div id="app">
-
-    <nav class="navbar is-success" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-            <a class="navbar-item" href="/">
-                <h1 class="is-size-4"> Peer Assessment </h1>
-            </a>
-    
-            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-            </a>
-        </div>
-    
-        <div class="navbar-menu">
-            <div class="navbar-start">
-                <a class="navbar-item" href="/"> Home</a>
-                <a class="navbar-item" href="/assignments"> Assignments </a>
-            </div>
-    
-            <div class="navbar-end">
-                <div class="navbar-item" v-if="user">
-                    <a class="button is-success is-inverted" onclick="signOut()">Sign out</a>
-                </div>
-    
-                <div class="navbar-item" v-if="!user">
-                    <a class="button is-success is-inverted" href="/login">Sign in</a>
-                </div>
-    
-            </div>
-        </div>
-    </nav>
-
+<body>
     <section class="section">
         <div class="container">
             
-            <h1 class="subtitle is-2">Create a new assignment</h1>
+            <div id="app">
+                <h1 class="title">
+                    New Assignment
+                </h1>
 
-            <div class="box">
                 <p v-if="errors.length">
                     <b>Please correct the following error(s):</b>
                     <ul>
@@ -78,34 +43,32 @@
                     </ul>
                 </p>
 
-            <div class="field">
-                <label class="label">Name</label>
-                <div class="control">
-                    <input v-model="name" id="assignmentName" class="input" type="text" placeholder="Enter the name of the assignment" >
+                <div class="field">
+                    <label class="label">Name</label>
+                    <div class="control">
+                        <input v-model="name" id="assignmentName" class="input" type="text" placeholder="Enter the name of the assignment" >
+                    </div>
                 </div>
-            </div>
-            
-            <div class="field">
-                <label class="label">Description</label>
-                <div class="control">
-                    <textarea v-model="description" id="assignmentDesc" class="textarea" placeholder="Enter the description of the assignment" ></textarea>
+                <div class="field">
+                    <label class="label">Description</label>
+                    <div class="control">
+                        <textarea v-model="description" id="assignmentDesc" class="textarea" placeholder="Enter the description of the assignment" ></textarea>
+                    </div>
                 </div>
-            </div>
-
-            <div class="columns">
-                <div class="field column">
+                <div class="field">
                     <label class="label">Course</label>
                     <div class="control">
                         <div class="select">
-                            <select v-model="courseIndex" id="course-select">
-                                <option disabled value="" >Choose a course</option>
-                                <option v-for="(course, index) in coursesArr" :value="index" >{{course.name}}</option>
-                            </select>
+                                <select v-model="courseIndex" id="course-select">
+                                        <option disabled value="" >Choose a course</option>
+                                        <option v-for="(course, index) in coursesArr" :value="index" >{{course.name}}</option>
+                                </select>
+                                
                         </div>
                     </div>
                 </div>
-            
-                <div class="field column" id="subject">
+                <span v-if="courseIndex === null">Choose a course firstly!</span>
+                <div class="field" id="subject">
                     <label class="label">Subject</label>
                     <div class="control">
                         <div class="select">
@@ -116,33 +79,29 @@
                         </div>
                     </div>
                 </div>
+                <div class="buttons level-right">
+                    <span class="button is-danger" onclick="goToAssignments()">Cancel</span>
+                    <span class="button is-success" v-on:click="checkForm()">Add</span>
+                </div>
             </div>
 
-            <div class="has-text-right ">
-                <a class="button is-medium is-danger" onclick="goToAssignments()">Cancel</a>
-                <a class="button is-medium is-success" v-on:click="checkForm()">Add</a>
-            </div>
-
-            </div>  
             
         </div>
     </section>
-</div> </body>
+</body>
 
 <script>
-
+    
     var app = new Vue({
-            el: '#app',
-            data: {
-                errors: [],
-                coursesArr: [],
-                name: null,
-                description: null,
-                courseIndex: null,
-                subjectIndex: null,
-                user: null
-            }
-            ,
+        el: '#app',
+        data: {
+            errors: [],
+            coursesArr: [],
+            name: null,
+            description: null,
+            courseIndex: null,
+            subjectIndex: null
+        },
         methods: {
             submitAssignment: function() {
                 var db = firebase.firestore();
@@ -199,22 +158,21 @@
                     }
                 }
             }
-        })
+    });
 
-    firebase.auth().onAuthStateChanged(function (user) {
-        app.user = user;
+    /*firebase.auth().onAuthStateChanged(function (user) {
         if (user) {
 
         } else {
             // User is signed out.
             window.location.href = "login";
         }
-    });
+    });*/
 
   function goToAssignments() {
     window.location.href = "assignments";
   }      
-
+   
   courseSelect = document.getElementById('course-select');
   var db = firebase.firestore();
   db.collection("courses").get().then(function(querySnapshot) {
@@ -224,7 +182,7 @@
           //courseSelect.innerHTML += "<option value='" + doc.data().name + "'>" + doc.data().name + "</option>";
       });
   });
-  
+
 </script>
 
 </html>
