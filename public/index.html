@@ -26,46 +26,67 @@
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="utils.js"></script>
 
 </head>
 
-<body>
+<body> <div id="app">
+
+    <nav class="navbar is-success" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/">
+                <h1 class="is-size-4"> Peer Assessment </h1>
+            </a>
+    
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+    
+        <div class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="/"> Home</a>
+                <a class="navbar-item" href="/assignments"> Assignments </a>
+            </div>
+    
+            <div class="navbar-end">
+                    <a class="navbar-item" href="/" v-if="user"> Hello, {{user.displayName}}!</a>
+                    
+                    <div class="navbar-item" v-if="user">
+                        <a class="button is-success is-inverted" onclick="signOut()">Sign out</a>
+                    </div>
+
+                    <div class="navbar-item" v-if="!user">
+                        <a class="button is-success is-inverted" href="/login">Sign in</a>
+                    </div>
+
+            </div>
+        </div>
+    </nav>
+
     <section class="section">
         <div class="container">
-            <h1 class="title"> SWP Peer Assessment </h1>
-
-            <p>Welcome to the Peer Assessment software project!</p>
-
-            <div id="app">
-              {{ message }}
-            </div>
-
-            <p id="greetingorlogin"></p>
+            <p class="subtitle is-2 has-text-centered">Welcome to the Peer Assessment software project!</p>
         </div>
     </section>
-</body>
+
+</div> </body>
 
 <script>
+
   var app = new Vue({
     el: '#app',
     data: {
-      message: 'Hello Vue!'
+      user: null
     }
   })
 
-  function goToLogin() {
-    window.location.href = "login";
-  }
-
   firebase.auth().onAuthStateChanged(function (user) {
-      if (user) {
-        document.getElementById("greetingorlogin").innerHTML = `Hello, ${user.displayName}!`
-      } else {
-        // User is signed out.
-        document.getElementById("greetingorlogin").innerHTML = `<a class="button is-primary is-rounded" onclick="goToLogin()">Sign in</a>`
-        //
-      }
+      app.user = user;
   });
+
 </script>
 
 </html>

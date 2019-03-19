@@ -34,8 +34,8 @@
     <body>
     <section class="hero is-primary">
         <div class="hero-body">
-            <h1 class="title" id="subject">Loading...</h1>
-            <h2 class="subtitle" id="assignment">Loading...</h2>
+            <h1 class="title" id="assignment">Loading...</h1>
+            <h2 class="subtitle" id="subject">Loading...</h2>
         </div>
     </section>
     <section class="section is-small">
@@ -78,15 +78,15 @@
     });
 
     let db = firebase.firestore();
-
-    let search = window.location.search.toString();
-    let searchId = search.substring(4, search.length); // Getting id of the assignment without '?id='
+    var url_string = window.location.href
+    var url = new URL(url_string);
+    var searchId = url.searchParams.get("id");
 
     let subject; // Title of subject assignment belongs to
     let name; // Title of the assignment
     let description; // Description of the assignment
 
-    db.collection("assignments").doc("id" + searchId).get()
+    db.collection("assignments").doc(searchId).get()
         .then(snapshot => {
             if (snapshot.data()) {
                 // the assignment with specified ID exists
@@ -119,7 +119,7 @@
             let selectedFile = file.files[0];
 
             let storageRef = firebase.storage().ref();
-            let subjectRef = storageRef.child("id" + searchId);
+            let subjectRef = storageRef.child(searchId);
             let objectRef = subjectRef.child(selectedFile.name);
 
             let metadata = {

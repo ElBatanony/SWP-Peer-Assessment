@@ -25,6 +25,7 @@
 
     </script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="utils.js"></script>
 </head>
 
 <body>
@@ -81,6 +82,15 @@
 
 <script>
 
+    firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+
+        } else {
+            // User is signed out.
+            window.location.href = "login";
+        }
+    });
+
     var url_string = window.location.href
     var url = new URL(url_string);
     var id = url.searchParams.get("id");
@@ -88,12 +98,15 @@
     var db = firebase.firestore();
     var docRef = db.collection("assignments").doc(id);
 
+    
+
     docRef.get().then(function(doc) {
         if (doc.exists) {
             SetParametrs(doc);
         } else {
             // doc.data() will be undefined in this case
             console.log("No such document!");
+            goTo('404');
         }
     }).catch(function(error) {
         console.log("Error getting document:", error);
@@ -199,6 +212,8 @@
         console.error("Error adding document: ", error);
     });
   }
+
+  
 
 </script>
 

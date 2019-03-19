@@ -80,6 +80,16 @@
 </body>
 
 <script>
+
+    firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+
+        } else {
+            // User is signed out.
+            window.location.href = "login";
+        }
+    });
+
   function goToAssignments() {
     window.location.href = "assignments";
   }      

@@ -26,6 +26,7 @@
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="utils.js"></script>
 
 </head>
 
@@ -36,13 +37,24 @@
             
             <div id="app">
                 
-                    <div v-for="assignment in assignments">
-                        <h1 class="title is-3">{{ assignment.name }}</h1>
-                        <h1 class="subtitle is-3">{{ assignment.description }}</h1>
+                <div v-for="assignment in assignments">
+                    
+                    <div class="columns">
+                        <div class="column is-10">
+                            <h1 class="title is-3">{{ assignment.name }}</h1>
+                        </div>
+                        <div class="column is-2">
+                            <a class="button is-info" v-if="userDetails.role == 'admin'" v-on:click="goTo('assignmentDetails?id='+assignment.id)">Edit Assignment</a>
+                            <a class="button is-warning" v-if="userDetails.role != 'admin'" v-on:click="goTo('solutions?id='+assignment.id)">View Assignment</a>
+                            
+                        </div>
                     </div>
-            </div>
+                    <br>
+                    
+                </div>
 
-            <div id="assignmentsDisplay"></div>
+                <a class="button is-success" onclick="goTo('assignmentCreation')" v-if="userDetails.role == 'admin'">Add Assignment</a>
+            </div>
 
         </div>
     </section>
@@ -55,11 +67,26 @@
         data: {
             message: 'Hello Vue!',
             assignments: [],
+            userDetails: {}
+        },
+        methods: {
+            goTo : goTo
         }
     })
 
     firebase.auth().onAuthStateChanged(function (user) {
         if (user) {
+            db.collection("users").doc(user.uid).get().then(function (doc) {
+                if (doc.exists) {
+                    //console.log("Document data:", doc.data());
+                    app.userDetails = doc.data();
+                } else {
+                    // doc.data() will be undefined in this case
+                    console.log("No such document!");
+                }
+            }).catch(function (error) {
+                console.log("Error getting document:", error);
+            });
         } else {
             // User is signed out.
             window.location.href = "login";
@@ -73,6 +100,7 @@
         querySnapshot.forEach(function (doc) {
             // doc.data() is never undefined for query doc snapshots
             app.assignments.push( doc.data() );
+            app.assignments[ app.assignments.length-1 ].id = doc.id;
         });
     });
 </script>
