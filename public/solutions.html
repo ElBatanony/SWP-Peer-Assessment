@@ -6,6 +6,7 @@
         <title></title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
         <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+        
 
         <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
         <script>
@@ -21,32 +22,56 @@
             firebase.initializeApp(config);
     
         </script>
+        <style>
+            .description {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            };          
+        </style>
     </head>
 
     <body>
-    <section class="section" id="header">
-        <div class="container">
+    <section class="hero is-primary">
+        <div class="hero-body">
             <h1 class="title" id="subject">Loading...</h1>
             <h2 class="subtitle" id="assignment">Loading...</h2>
         </div>
-
-        <div class="container" id="description">Loading...</div>
     </section>
-    <section class="section" id="upload">
-        <label class="upload-group">
-            Upload file
-            <input type="file" class="upload-group" id="solution">
-        </label>
-        <button type="button" class="btn btn-primary" id="uploadButton" onclick="uploadFile()">Submit</button>
+    <section class="section is-small">
+        <div class="container is-medium is-fullhd">
+            <h1 class="title">Description of the assignment</h1>
+            <p class="subtitle" id="description">Loading...</p>
+        </div>
     </section>
+    <section class="section is-medium">
+        <div class="container center is-medium">
+            <div class="file has-name">
+                <label class="file-label">
+                    <input class="file-input" type="file" id="solution">
+                    <span class="file-cta">
+                        <span class="file-icon">
+                            <i class="fas fa-upload"></i>
+                        </span>
+                        <span class="file-label" id="filename">
+                            Choose a file…
+                        </span>
+                    </span>
+                    <input class="button is-outlined" type="submit" id="uploadButton" onclick="uploadFile()" value="Submit">
+                </label>
+            </div>
+        </div>
+    </section>
+        
     </body>
 
 <script>
-    let userId;
+    let userId; // Id of user entered the page
 
+    // Automatic signing-in into the system
     firebase.auth().onAuthStateChanged(function (user) {
         if (user) {
-            userId = user.uid;
+            userId = user.uid; 
         } else {
             window.location.href = "login";
         }
@@ -55,33 +80,41 @@
     let db = firebase.firestore();
 
     let search = window.location.search.toString();
-    let searchId = search.substring(4, search.length);
+    let searchId = search.substring(4, search.length); // Getting id of the assignment without '?id='
 
-    let subject;
-    let name;
-    let description;
+    let subject; // Title of subject assignment belongs to
+    let name; // Title of the assignment
+    let description; // Description of the assignment
 
     db.collection("assignments").doc("id" + searchId).get()
         .then(snapshot => {
             if (snapshot.data()) {
+                // the assignment with specified ID exists
                 subject = snapshot.data().subject;
                 name = snapshot.data().name;
                 description = snapshot.data().description;
 
+                // Set page details according to assingment
                 document.title = subject + " " + name;
                 document.getElementById('subject').innerHTML = subject;
                 document.getElementById('assignment').innerHTML = name;
                 document.getElementById('description').innerHTML = description;
             }
             else {
+                // the assignment with specified ID does not exist
                 window.location.replace(window.location.origin + "/404");
             }
         });    
 
-        let file = document.getElementById("solution");
+    let file = document.getElementById("solution");
+    file.onchange = function() {
+        if (file.files.length > 0) {
+            document.getElementById("filename").innerHTML = file.files[0].name;
+        }
+    }
 
+    // uploading the files into the firebase database
     function uploadFile() {
-        let file = document.getElementById("solution");
         if (file.files.length) {
             let selectedFile = file.files[0];
 
@@ -97,7 +130,8 @@
 
             objectRef.put(selectedFile, metadata)
                 .then(() => {
-                    file.value = "";
+                    // Cleaning the box off the name of uploaded file
+                    document.getElementById("filename").innerHTML = "Choose a file…";
                 });
         };
     }
