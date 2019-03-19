@@ -89,7 +89,13 @@
             let subjectRef = storageRef.child("id" + searchId);
             let objectRef = subjectRef.child(selectedFile.name);
 
-            let uploadTask = objectRef.put(selectedFile)
+            let metadata = {
+                customMetadata: {
+                    "author": userId
+                }
+            };
+
+            objectRef.put(selectedFile, metadata)
                 .then(() => {
                     file.value = "";
                 });
