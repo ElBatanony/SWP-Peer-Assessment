@@ -108,9 +108,9 @@
                 </div>
 
                 <div class="buttons level-right">
-                    <span class="button is-medium is-danger" onclick="goToAssignments()">Cancel</span>
+                    <span class="button is-medium is-danger" v-on:click="deleteAssignment">Delete Assignment</span>
+                    <span class="button is-medium is-warning" onclick="goToAssignments()">Cancel</span>
                     <span class="button is-medium is-success" onclick="SubmitAssignment()">Save changes</span>
-                
                 </div>
             </div>
 
@@ -125,6 +125,21 @@
         el: '#app',
         data: {
             user: null
+        },
+        methods: {
+            deleteAssignment : function () {
+                var url_string = window.location.href
+                var url = new URL(url_string);
+                var id = url.searchParams.get("id");
+
+                var db = firebase.firestore();
+                db.collection("assignments").doc(id).delete().then(function () {
+                    console.log("Document successfully deleted!");
+                    window.location.href = "assignments";
+                }).catch(function (error) {
+                    console.error("Error removing document: ", error);
+                });
+            }
         }
     })
 
