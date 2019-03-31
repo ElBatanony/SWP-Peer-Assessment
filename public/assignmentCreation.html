@@ -11,6 +11,10 @@
     <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
     <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
     <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+
+    <link href="/bulma-calendar/bulma-calendar.css" rel="stylesheet">
+    <script src="/bulma-calendar/bulma-calendar.js"></script>
+
     <script>
         // Initialize Firebase
         var config = {
@@ -123,6 +127,8 @@
                 <a class="button is-medium is-success" v-on:click="checkForm()">Add</a>
             </div>
 
+            <input type="date" data-display-mode="inline" data-is-range="true" data-close-on-select="false">
+
             </div>  
             
         </div>
@@ -224,7 +230,27 @@
           //courseSelect.innerHTML += "<option value='" + doc.data().name + "'>" + doc.data().name + "</option>";
       });
   });
-  
+
+  // Initialize all input of type date
+    var calendars = bulmaCalendar.attach('[type="date"]');
+
+    // Loop on each calendar initialized
+    for (var i = 0; i < calendars.length; i++) {
+        // Add listener to date:selected event
+        calendars[i].on('select', date => {
+            console.log(date);
+        });
+    }
+
+    // To access to bulmaCalendar instance of an element
+    var element = document.querySelector('#my-element');
+    if (element) {
+        // bulmaCalendar instance is available as element.bulmaCalendar
+        element.bulmaCalendar.on('select', function (datepicker) {
+            console.log(datepicker.data.value());
+        });
+    }
+
 </script>
 
 </html>
