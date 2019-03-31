@@ -147,10 +147,10 @@
             submitAssignment: function() {
                 var db = firebase.firestore();
                 db.collection("assignments").add({
-                name: this.name,
-                description: this.description,
-                course: this.coursesArr[this.courseIndex],
-                subject: this.coursesArr[this.courseIndex].subjects[this.subjectIndex]
+                    name: this.name,
+                    description: this.description,
+                    course: this.coursesArr[this.courseIndex].name,
+                    subject: this.coursesArr[this.courseIndex].subjects[this.subjectIndex]
                 })
                 .then(function(docRef) {
                     console.log("Document written with ID: ", docRef.id);
