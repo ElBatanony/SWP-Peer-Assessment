@@ -167,20 +167,20 @@
             docRef.get().then(function(doc) {
                 if (doc.exists) {
                     var storage = firebase.storage();
-                    var storageReference = storage.ref(doc.data().refernce);
+                    var storageReference = storage.ref(doc.data().reference);
                     storageReference.delete().catch(function(error) {
                         console.log("Error: ", error);
                     // Uh-oh, an error occurred!
                     });
                     docRef.update({
-                        refernce: objectRef.fullPath
+                        reference: objectRef.fullPath
                     }).catch(function(error) {
                         console.error("Error adding document: ", error);
                     });
                 } else {
                     // doc.data() will be undefined in this case
                     docRef.set({
-                        refernce: objectRef.fullPath
+                        reference: objectRef.fullPath
                     }).catch(function(error) {
                         console.error("Error adding document: ", error);
                     });
