@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Assignments - Peer Assessment SWP</title>
+    <title>Users- Peer Assessment SWP</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
 
@@ -37,116 +37,108 @@
     <nav class="navbar is-success" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <a class="navbar-item" href="/">
-                <h1 class="is-size-4"> Peer Assessment </h1>
+                <h1 class="is-size-4">Peer Assessment</h1>
             </a>
-    
+        
             <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
             </a>
         </div>
-    
+
         <div class="navbar-menu">
             <div class="navbar-start">
-                <a class="navbar-item" href="/"> Home</a>
-                <a class="navbar-item" href="/assignments"> Assignments </a>
+                <a class="navbar-item" href="/">Home</a>
+                <a class="navbar-item" href="/assignments">Assignments</a>
                 <a class="navbar-item" v-if="userDetails.role == 'admin'" href="/accounts">Users</a>
             </div>
-    
+
             <div class="navbar-end">
                 <div class="navbar-item" v-if="user">
-                    <a class="button is-success is-inverted" onclick="signOut()">Sign out</a>
+                    <a class="button is-success is-inverted" onclick="signOut()">Sign Out</a>
                 </div>
-    
+
                 <div class="navbar-item" v-if="!user">
                     <a class="button is-success is-inverted" href="/login">Sign in</a>
                 </div>
-    
             </div>
         </div>
+
     </nav>
 
     <section class="section">
         <div class="container">
 
-            <h1 class="subtitle is-2">Your Assignments</h1>
-            
-            <div class="box" v-for="assignment in assignments">
+            <h1 class="subtitle is-2">Users of the system</h1>
+
+            <div class="box" v-for="account in accounts">
                 
                 <div class="columns is-vcentered">
                     <div class="column is-9">
-                        <h1 class="subtitle is-3">{{assignment.name}} </h1>
+                        <h1 class="subtitle is-3">{{account.name}}</h1>
                         <div class="tags has-addons">
-                            <span class="tag is-light is-medium">{{assignment.course}}</span>
-                            <span class="tag is-success is-medium">{{assignment.subject}}</span>
+                            <span class="tag is-light is-medium">{{account.course}}</span>
+                            <span class="tag is-light is-medium">{{account.group}}</span>
                         </div>
                     </div>
+
                     <div class="column is-3">
-                        <a class="button is-medium is-info" v-if="userDetails.role == 'admin'" v-on:click="goTo('assignmentDetails?id='+assignment.id)">Edit Assignment</a>
-                        <a class="button is-medium is-warning" v-if="userDetails.role != 'admin'" v-on:click="goTo('solutions?id='+assignment.id)">View Assignment</a>
-                        
+                        <a class="button is-medium is-info" v-on:click="goTo('accountDetails?id='+account.id)">Edit user information</a>
                     </div>
                 </div>
-                
-            </div>
-            
-            <div class="has-text-centered">
-                <a class="button is-medium is-success" onclick="goTo('assignmentCreation')" v-if="userDetails.role == 'admin'">Add Assignment</a>
-            </div>
-            
 
+            </div>
         </div>
     </section>
+
 </div> </body>
 
 <script>
 
-    var app = new Vue({
+    let app = new Vue({
         el: '#app',
         data: {
             message: 'Hello Vue!',
-            assignments: [],
-            user : {},
+            accounts: [],
+            user: {},
             userDetails: {}
         },
         methods: {
-            goTo : goTo
+            goTo: goTo
         }
-    })
+    });
 
-    firebase.auth().onAuthStateChanged(function (user) {
+    firebase.auth().onAuthStateChanged(user => {
         app.user = user;
-        if (user) {
-            db.collection("users").doc(user.uid).get().then(function (doc) {
+        if(user) {
+            db.collection("users").doc(user.uid).get()
+            .then(doc => {
                 if (doc.exists) {
-                    //console.log("Document data:", doc.data());
                     app.userDetails = doc.data();
                 } else {
                     // doc.data() will be undefined in this case
-                    console.log("No such document!");
+                    console.log("No such document");
                 }
-            }).catch(function (error) {
-                console.log("Error getting document:", error);
+            }).catch(erorr => {
+                console.log("Error getting document: ", error);
             });
         } else {
-            // User is signed out.
-            window.location.href = "login";
+            // User is signed out
+            window.location.href="login";
         }
-    });
+    }); 
 
-    var db = firebase.firestore();
+    let db = firebase.firestore();
 
-    db.collection("assignments").get().then(function (querySnapshot) {
-        
-        querySnapshot.forEach(function (doc) {
+    db.collection("users").get().then(querySnapshot => {
+        querySnapshot.forEach(doc => {
             // doc.data() is never undefined for query doc snapshots
-            app.assignments.push( doc.data() );
-            app.assignments[ app.assignments.length-1 ].id = doc.id;
+            app.accounts.push(doc.data());
+            app.accounts[app.accounts.length-1].id = doc.id;
         });
     });
+
 </script>
 
 </html>
-
-
