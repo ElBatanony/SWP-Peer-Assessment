@@ -210,7 +210,6 @@
 
             db.collection("users").doc(id).get()
             .then(doc => {
-                console.log(doc);
                 if (doc.exists) {
                     app.setParameters(doc);
                 } else {
@@ -243,11 +242,15 @@
                             app.courseIndex = i;
                         }
                     }
-                    for (i = 0; i < app.groupsArr.length; i++) {
-                       if (app.groupsArr[i].name === userInfo.data().group) {
-                            app.groupIndex = i;
+
+                    app.courseChanged().then( () => {
+                        console.log(app.groupsArr);
+                        for (i = 0; i < app.groupsArr.length; i++) {
+                            if (app.groupsArr[i] === userInfo.data().group) {
+                                    app.groupIndex = i;
+                            }
                         }
-                    }
+                    });
                 }
             },
 
@@ -307,7 +310,7 @@
 
             courseChanged: () => {
                 app.groupIndex = null;
-                db.collection("courses").get()
+                return db.collection("courses").get()
                 .then(querySnapshot => {
                     querySnapshot.forEach(doc => {
                         if (doc.data().name === app.coursesArr[app.courseIndex].name) {
