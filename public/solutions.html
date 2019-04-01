@@ -85,6 +85,13 @@
                     </label>
                 </div>
             </div>
+
+            <div class="field" v-if="assignment !== null">
+                <label class="label">Uploaded</label>
+                <div class="control">
+                <input v-model="assignment" id="uploadedAssignment" class="input is-static" type="text" readonly>
+                </div>
+            </div>
         </div>
     </section>
         
@@ -95,21 +102,39 @@
     var app = new Vue({
         el: '#app',
         data: {
-            user: null
+            user: null,
+            assignment: null
+        },
+        mounted: () => {
+            let userId; // Id of user entered the page
+
+            // Automatic signing-in into the system
+            firebase.auth().onAuthStateChanged(function (user) {
+                app.user = user;
+                if (user) {
+                    userId = user.uid; 
+                } else {
+                    window.location.href = "login";
+                }
+            });
+
+            let db = firebase.firestore();
+            let url_string = window.location.href
+            let url = new URL(url_string);
+            let searchId = url.searchParams.get("id");
+
+            firebase.firestore().collection("assignments").doc(searchId).collection("users").get()
+            .then(snapshot => {
+                snapshot.docs.forEach(doc => {
+                    if (doc.id === userId) {
+                        let path = doc.data().reference;
+                        let parsedPath = path.split('/');
+                        app.assignment = parsedPath[parsedPath.length - 1];
+                    }
+                });
+            });
         }
     })
-
-    let userId; // Id of user entered the page
-
-    // Automatic signing-in into the system
-    firebase.auth().onAuthStateChanged(function (user) {
-        app.user = user;
-        if (user) {
-            userId = user.uid; 
-        } else {
-            window.location.href = "login";
-        }
-    });
 
     let db = firebase.firestore();
     var url_string = window.location.href
@@ -161,36 +186,6 @@
                     "author": userId
                 }
             };
-            var db = firebase.firestore();
-            var docRef = db.collection("assignments").doc(searchId).collection("users").doc(userId)
-
-            docRef.get().then(function(doc) {
-                if (doc.exists) {
-                    var storage = firebase.storage();
-                    var storageReference = storage.ref(doc.data().reference);
-                    
-                    docRef.update({
-                        reference: objectRef.fullPath
-                    }).then(function()
-                    {
-                        storageReference.delete().catch(function(error) {
-                        console.log("Error: ", error);
-                        // Uh-oh, an error occurred!
-                        });
-                    }).catch(function(error) {
-                        console.error("Error adding document: ", error);
-                    });
-                } else {
-                    // doc.data() will be undefined in this case
-                    docRef.set({
-                        reference: objectRef.fullPath
-                    }).catch(function(error) {
-                        console.error("Error adding document: ", error);
-                    });
-                }
-            }).catch(function(error) {
-                console.log("Error getting document:", error);
-            });
 
             objectRef.put(selectedFile, metadata)
                 .then(() => {
