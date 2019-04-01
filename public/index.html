@@ -71,6 +71,16 @@
     <section class="section">
         <div class="container">
             <p class="subtitle is-2 has-text-centered">Welcome to the Peer Assessment software project!</p>
+            <br>
+            <h1 class="subtitle is-4" v-if="notifications.length > 0">Notifications</h1>
+            <ul>
+                <li v-for="not in notifications" style="margin-bottom:3px">
+                    <div class="notification is-warning">
+                        <button class="delete" v-on:click="deleteNotification(not)"></button>
+                         {{not}}
+                    </div>
+                </li>
+            <ul>
         </div>
     </section>
 
@@ -81,12 +91,37 @@
   var app = new Vue({
     el: '#app',
     data: {
-      user: null
+      user: null,
+      notifications: []
+    },
+    methods: {
+        deleteNotification(x) {
+            app.notifications = app.notifications.filter( not => not != x);
+
+            return firebase.firestore().collection("users").doc(app.user.uid).update({
+                notifications: firebase.firestore.FieldValue.arrayRemove(x)
+            });
+        }
     }
   })
 
   firebase.auth().onAuthStateChanged(function (user) {
       app.user = user;
+
+      if (user) {
+          
+
+          firebase.firestore().collection("users").doc(user.uid).get().then(function (doc) {
+              if (doc.exists) {
+                  app.notifications = doc.data().notifications
+              } else {
+                  console.log("No such document!");
+              }
+          }).catch(function (error) {
+              console.log("Error getting document:", error);
+          });
+
+      }
   });
 
 </script>
