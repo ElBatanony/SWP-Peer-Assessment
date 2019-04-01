@@ -22,7 +22,6 @@
             messagingSenderId: "998218435509"
         };
         firebase.initializeApp(config);
-
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -108,9 +107,9 @@
                 </div>
 
                 <div class="buttons level-right">
-                    <span class="button is-medium is-danger" onclick="goToAssignments()">Cancel</span>
+                    <span class="button is-medium is-danger" v-on:click="deleteAssignment">Delete Assignment</span>
+                    <span class="button is-medium is-warning" onclick="goToAssignments()">Cancel</span>
                     <span class="button is-medium is-success" onclick="SubmitAssignment()">Save changes</span>
-                
                 </div>
             </div>
 
@@ -120,33 +119,40 @@
 </div> </body>
 
 <script>
-
     var app = new Vue({
         el: '#app',
         data: {
             user: null
+        },
+        methods: {
+            deleteAssignment : function () {
+                var url_string = window.location.href
+                var url = new URL(url_string);
+                var id = url.searchParams.get("id");
+                var db = firebase.firestore();
+                db.collection("assignments").doc(id).delete().then(function () {
+                    console.log("Document successfully deleted!");
+                    window.location.href = "assignments";
+                }).catch(function (error) {
+                    console.error("Error removing document: ", error);
+                });
+            }
         }
     })
-
     firebase.auth().onAuthStateChanged(function (user) {
         app.user = user;
         if (user) {
-
         } else {
             // User is signed out.
             window.location.href = "login";
         }
     });
-
     var url_string = window.location.href
     var url = new URL(url_string);
     var id = url.searchParams.get("id");
-
     var db = firebase.firestore();
     var docRef = db.collection("assignments").doc(id);
-
     
-
     docRef.get().then(function(doc) {
         if (doc.exists) {
             SetParametrs(doc);
@@ -158,13 +164,10 @@
     }).catch(function(error) {
         console.log("Error getting document:", error);
     });
-
     
-
   function goToAssignments() {
     window.location.href = "assignments";
   }      
-
   function courses (courseName)
   {
       subSelect = document.getElementById('subject-select');
@@ -183,12 +186,10 @@
           }
           )});
   }
-
   function SetParametrs(curDoc)
     {
         document.getElementById('assignmentName').value = curDoc.data().name;
         document.getElementById('assignmentDesc').value = curDoc.data().description;
-
         courseSelect = document.getElementById('course-select');
         var db = firebase.firestore();
         db.collection("courses").get().then(function(querySnapshot) {
@@ -204,7 +205,6 @@
             i = i + 1;
         });
         courseSelect.options[index].selected = true;
-
         subSelect = document.getElementById('subject-select');
         db.collection("courses").get().then(function(querySnapshot) {
             querySnapshot.forEach(function(doc) {
@@ -230,11 +230,7 @@
         });
     }
   
-
-
-
     
-
   function SubmitAssignment()
   {
     var url_string = window.location.href
@@ -244,7 +240,6 @@
     descAssi = document.getElementById('assignmentDesc');
     courseSelect = document.getElementById('course-select');
     subSelect = document.getElementById('subject-select');
-
     var db = firebase.firestore();
     db.collection("assignments").doc(id).update({
     name: nameAssi.value,
@@ -259,11 +254,7 @@
         console.error("Error adding document: ", error);
     });
   }
-
   
-
 </script>
 
 </html>
-
-
