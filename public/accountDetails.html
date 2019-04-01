@@ -134,8 +134,9 @@
                 </div>
 
                 <div class="has-text-right">
-                    <a class="button is-medium is-danger" v-on:click="goTo('/accounts')">Cancel</a>
-                    <a class="button is-medium is-sgroupsArruccess" v-on:click="checkForm()">Save changes</a>
+                    <a class="button is-medium is-danger" v-on:click="deleteUser()">Delete User</a>
+                    <a class="button is-medium is-warning" v-on:click="goTo('/accounts')">Cancel</a>
+                    <a class="button is-medium is-success" v-on:click="checkForm()">Save changes</a>
                 </div>
 
             </div>
@@ -305,6 +306,20 @@
                     goTo("/accounts");
                 }).catch(error => {
                     console.error("Error adding user information: ", error);
+                });
+            },
+
+            deleteUser : function () {
+                let url_string = window.location.href
+                let url = new URL(url_string);
+                let id = url.searchParams.get("id");
+
+                let db = firebase.firestore();
+                db.collection("users").doc(id).delete().then(function () {
+                    console.log("User successfully deleted!");
+                    goTo("/accounts");
+                }).catch(function (error) {
+                    console.error("Error removing user: ", error);
                 });
             },
 
