@@ -25,3 +25,25 @@ exports.modifyAssignment = functions.firestore
         });
 
     });
+
+exports.addUserDoc = functions.auth.user().onCreate((user) => {
+    return admin.auth().getUser(user.uid)
+        .then(function (userRecord) {
+            return admin.firestore().collection("users").doc(user.uid).set({
+                name: userRecord.displayName,
+                email: user.email,
+                role: "student",
+                notifications: []
+            })
+            .then(function () {
+                console.log("Created a document for a new user " + user.uid);
+            })
+            .catch(function (error) {
+                console.error("Error writing document for a new user: ", error);
+            });
+        })
+        .catch(function (error) {
+            console.log("Error fetching user data:", error);
+        });
+    
+});
