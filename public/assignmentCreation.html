@@ -126,8 +126,8 @@
                 <a class="button is-medium is-danger" onclick="goToAssignments()">Cancel</a>
                 <a class="button is-medium is-success" v-on:click="checkForm()">Add</a>
             </div>
-
-            <input type="date" data-display-mode="inline" data-is-range="true" data-close-on-select="false">
+            <p>Deadline: {{getDeadline()}}</p>
+            <input type="datetime" lang="en" data-display-mode="inline" data-close-on-select="false">
 
             </div>  
             
@@ -146,21 +146,29 @@
                 description: null,
                 courseIndex: null,
                 subjectIndex: null,
-                user: null
+                user: null,
+                deadline: (new Date()).getTime() / 1000
             }
             ,
         methods: {
+            getDeadline: function()
+            {
+                var date = new Date();
+                date.setTime(this.deadline * 1000);
+                return date.toString();
+            },
             submitAssignment: function() {
                 var db = firebase.firestore();
                 db.collection("assignments").add({
                     name: this.name,
                     description: this.description,
                     course: this.coursesArr[this.courseIndex].name,
-                    subject: this.coursesArr[this.courseIndex].subjects[this.subjectIndex]
+                    subject: this.coursesArr[this.courseIndex].subjects[this.subjectIndex],
+                    deadline: this.deadline
                 })
                 .then(function(docRef) {
                     console.log("Document written with ID: ", docRef.id);
-                    window.location.href = "assignments";
+                    //window.location.href = "assignments";
                 })
                 .catch(function(error) {
                     console.error("Error adding document: ", error);
@@ -232,13 +240,16 @@
   });
 
   // Initialize all input of type date
-    var calendars = bulmaCalendar.attach('[type="date"]');
+    var calendars = bulmaCalendar.attach('[type="datetime"]');
 
     // Loop on each calendar initialized
     for (var i = 0; i < calendars.length; i++) {
         // Add listener to date:selected event
         calendars[i].on('select', date => {
-            console.log(date);
+            if (new Date(date.data.value()).getTime() / 1000 > new Date().getTime() / 1000)
+            {
+                app.deadline = new Date(date.data.value()).getTime() / 1000;
+            }
         });
     }
 
