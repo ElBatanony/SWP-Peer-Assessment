@@ -25,6 +25,7 @@
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
     <script src="utils.js"></script>
     
     <link rel="icon" href="peer-review-icon.png">
@@ -68,7 +69,7 @@
             <h1 class="title is-2" id="assignment">Loading...</h1>
             <h2 class="subtitle is-4" id="subject">Loading...</h2>
             <p class="box subtitle" id="description">Loading...</p>
-
+            <a class="button is-success" v-bind:href="linkz">Download</a>
         </div>
     </section>
         
@@ -79,7 +80,8 @@
     var app = new Vue({
         el: '#app',
         data: {
-            user: null
+            user: null,
+            linkz: ""
         }
     })
 
@@ -124,6 +126,31 @@
             }
         });
 
+    var getWork = firebase.functions().httpsCallable('getWork');
+    function getWorkWrapper()
+    {
+        getWork({assignemntID: searchId}).then(function(result) {
+            if(result.message == "Assignment don't finifhed yet")
+            {
+                app.ref = "";
+                app.link = "";
+                console.log("Deadline");
+            }
+            else if (result.message == "All works are checked")
+            {
+                app.ref = "";
+                app.link = "";
+                console.log("All checked");
+            }
+            else
+            {
+                app.ref = result.message;
+                var storageReference = storage.ref(app.ref);
+                app.link = storageReference.getDownloadURL();
+                console.log(app.link);
+            }
+        });
+    }
 </script>
 
 </html>
