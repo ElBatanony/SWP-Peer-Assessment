@@ -46,4 +46,52 @@ exports.addUserDoc = functions.auth.user().onCreate((user) => {
             console.log("Error fetching user data:", error);
         });
     
+
 });
+
+exports.getWork = functions.https.onCall((data, context) => {
+        const assignemntID = data.assignmentID;
+        const uid = data.uid;//auth.uid
+
+        var db = admin.firestore();
+        return db.collection("assignments").doc(assignemntID).get().then(function (doc) {
+            if (doc.data().deadline > (new Date().getTime()))
+            {
+                return {message: "Assignment don't finished yet"};
+            } 
+            return db.collection("assignments").doc(assignemntID).collection("users").get().then(function (querySnapshot) {
+                done = [];
+                ref = "";
+                querySnapshot.forEach(function(doc)
+                {
+                    if(doc.id == uid)
+                    {
+                        done = doc.data().done;
+                        return;
+                    }
+                });
+                if(!done)
+                {
+                   done = [];
+                }
+                querySnapshot.forEach(function(doc)
+                {
+                    if(doc.id != uid && !(done.includes(doc.data().reference)))
+                    {
+                        ref = doc.data().reference;
+                        return;
+                    }
+                });
+                if(ref == "")
+                {
+                    return {
+                        message: "All works are checked"
+                    };
+    
+                }
+                return {
+                    message: ref
+                };
+            });
+        });
+    });

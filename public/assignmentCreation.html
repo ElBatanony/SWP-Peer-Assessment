@@ -11,6 +11,10 @@
     <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
     <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
     <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+
+    <link href="/bulma-calendar/bulma-calendar.css" rel="stylesheet">
+    <script src="/bulma-calendar/bulma-calendar.js"></script>
+
     <script>
         // Initialize Firebase
         var config = {
@@ -122,6 +126,8 @@
                 <a class="button is-medium is-danger" onclick="goToAssignments()">Cancel</a>
                 <a class="button is-medium is-success" v-on:click="checkForm()">Add</a>
             </div>
+            <p>Deadline: {{getDeadline()}}</p>
+            <input type="datetime" lang="en" data-display-mode="inline" data-close-on-select="false">
 
             </div>  
             
@@ -140,17 +146,25 @@
                 description: null,
                 courseIndex: null,
                 subjectIndex: null,
-                user: null
+                user: null,
+                deadline: (new Date()).getTime() / 1000
             }
             ,
         methods: {
+            getDeadline: function()
+            {
+                var date = new Date();
+                date.setTime(this.deadline * 1000);
+                return date.toString();
+            },
             submitAssignment: function() {
                 var db = firebase.firestore();
                 db.collection("assignments").add({
-                name: this.name,
-                description: this.description,
-                course: this.coursesArr[this.courseIndex],
-                subject: this.coursesArr[this.courseIndex].subjects[this.subjectIndex]
+                    name: this.name,
+                    description: this.description,
+                    course: this.coursesArr[this.courseIndex].name,
+                    subject: this.coursesArr[this.courseIndex].subjects[this.subjectIndex],
+                    deadline: this.deadline
                 })
                 .then(function(docRef) {
                     console.log("Document written with ID: ", docRef.id);
@@ -224,7 +238,30 @@
           //courseSelect.innerHTML += "<option value='" + doc.data().name + "'>" + doc.data().name + "</option>";
       });
   });
-  
+
+  // Initialize all input of type date
+    var calendars = bulmaCalendar.attach('[type="datetime"]');
+
+    // Loop on each calendar initialized
+    for (var i = 0; i < calendars.length; i++) {
+        // Add listener to date:selected event
+        calendars[i].on('select', date => {
+            if (new Date(date.data.value()).getTime() / 1000 > new Date().getTime() / 1000)
+            {
+                app.deadline = new Date(date.data.value()).getTime() / 1000;
+            }
+        });
+    }
+
+    // To access to bulmaCalendar instance of an element
+    var element = document.querySelector('#my-element');
+    if (element) {
+        // bulmaCalendar instance is available as element.bulmaCalendar
+        element.bulmaCalendar.on('select', function (datepicker) {
+            console.log(datepicker.data.value());
+        });
+    }
+
 </script>
 
 </html>
