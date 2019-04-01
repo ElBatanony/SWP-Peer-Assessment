@@ -50,7 +50,7 @@ exports.addUserDoc = functions.auth.user().onCreate((user) => {
 
 exports.getWork = functions.https.onCall((data, context) => {
         const assignemntID = data.assignmentID;
-        const uid = data.uid;//auth.uid
+        const uid = data.auth.uid;
 
         var db = admin.firestore();
         return db.collection("assignments").doc(assignemntID).get().then(function (doc) {
