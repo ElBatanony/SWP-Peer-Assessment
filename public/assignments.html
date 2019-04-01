@@ -51,6 +51,7 @@
             <div class="navbar-start">
                 <a class="navbar-item" href="/"> Home</a>
                 <a class="navbar-item" href="/assignments"> Assignments </a>
+                <a class="navbar-item" v-if="userDetails.role == 'admin'" href="/accounts">Users</a>
             </div>
     
             <div class="navbar-end">

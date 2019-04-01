@@ -49,6 +49,7 @@
             <div class="navbar-start">
                 <a class="navbar-item" href="/"> Home</a>
                 <a class="navbar-item" href="/assignments"> Assignments </a>
+                <a class="navbar-item" v-if="userDetails.role == 'admin'" href="/accounts">Users</a>
             </div>
     
             <div class="navbar-end">
@@ -122,7 +123,8 @@
     var app = new Vue({
         el: '#app',
         data: {
-            user: null
+            user: null,
+            userDetails: {}
         },
         methods: {
             deleteAssignment : function () {
@@ -139,14 +141,26 @@
             }
         }
     })
-    firebase.auth().onAuthStateChanged(function (user) {
+    firebase.auth().onAuthStateChanged(user => {
         app.user = user;
-        if (user) {
+        if(user) {
+            db.collection("users").doc(user.uid).get()
+            .then(doc => {
+                if (doc.exists) {
+                    app.userDetails = doc.data();
+                } else {
+                    // doc.data() will be undefined in this case
+                    console.log("No such document");
+                }
+            }).catch(erorr => {
+                console.log("Error getting document: ", error);
+            });
         } else {
-            // User is signed out.
-            window.location.href = "login";
+            // User is signed out
+            window.location.href="login";
         }
     });
+
     var url_string = window.location.href
     var url = new URL(url_string);
     var id = url.searchParams.get("id");
