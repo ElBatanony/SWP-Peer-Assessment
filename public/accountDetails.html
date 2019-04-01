@@ -80,24 +80,17 @@
                     </ul>
                 </p>
 
-                <!-- <div class="field">
+                <div class="field">
                     <label class="label">Email</label>
                     <div class="control">
-                        <input v-model="email" id="userEmail" class="input" type="text">
-                    </div>
-                </div> -->
-
-                <div class="field">
-                    <label class="label">First Name</label>
-                    <div class="control">
-                        <input v-model="firstName" id="userFirstName" class="input" type="text">
+                        <input v-model="email" id="userEmail" class="input" type="text" readonly>
                     </div>
                 </div>
 
                 <div class="field">
-                    <label class="label">Second Name</label>
+                    <label class="label">Name</label>
                     <div class="control">
-                        <input v-model="secondName" id="userSecondName" class="input" type="text">
+                        <input v-model="name" id="userFirstName" class="input" type="text">
                     </div>
                 </div>
 
@@ -158,8 +151,8 @@
         data: {
             db: null,
             errors: [],
-            firstName: null,
-            secondName: null,
+            email: null,
+            name: null,
             rolesArr: [],
             roleIndex: null,
             coursesArr: [],
@@ -235,8 +228,8 @@
             goTo: goTo,
 
             setParameters: userInfo => {
-                app.firstName = userInfo.data().firstName;
-                app.secondName = userInfo.data().secondName;
+                app.email = userInfo.data().email;
+                app.name = userInfo.data().name;
                 
                 for (i = 0; i < app.rolesArr.length; i++) {
                     if (app.rolesArr[i].name === userInfo.data().role) {
@@ -260,7 +253,7 @@
 
             checkForm: function(e) {
                 console.log();
-                if (this.firstName && this.secondName && !(this.roleIndex === null) && 
+                if (this.name && !(this.roleIndex === null) && 
                     ((app.rolesArr[this.roleIndex].name !== 'student') || 
                     (!(this.courseIndex === null) && !(this.groupIndex === null)))) {
                         console.log(!(this.courseIndex === null) && !(this.groupIndex === null));
@@ -270,11 +263,8 @@
 
                 this.errors=[]
                 
-                if (!this.firstName) {
-                    this.errors.push("First name required.");
-                }
-                if (!this.secondName) {
-                    this.errors.push("Second name required.");
+                if (!this.name) {
+                    this.errors.push("Name required.");
                 }
                 if (this.roleIndex === null) {
                     this.errors.push("Role required.");
@@ -304,8 +294,7 @@
                 }
 
                 db.collection("users").doc(id).update({
-                    firstName: app.firstName,
-                    secondName: app.secondName,
+                    name: app.name,
                     role: role,
                     course: course,
                     group: group
@@ -326,8 +315,7 @@
                         }
                     });
                 });
-            },
-            
+            }
         }
     });
 
