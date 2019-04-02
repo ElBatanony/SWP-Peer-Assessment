@@ -107,7 +107,8 @@
         data: {
             user: null,
             assignment: null,
-            linkz: ""
+            linkz: "",
+            userId: null
         },
         mounted: () => {
             let userId; // Id of user entered the page
@@ -117,16 +118,19 @@
                 app.user = user;
                 if (user) {
                     userId = user.uid; 
+                    app.userId = userId;
                 } else {
                     window.location.href = "login";
                 }
             });
+
+        
             let db = firebase.firestore();
             let url_string = window.location.href
             let url = new URL(url_string);
             let searchId = url.searchParams.get("id");
 
-            firebase.firestore().collection("assignments").doc(searchId).collection("users").get()
+            firebase.firestore().collection("assignments").doc(searchId).collection("users").get() 
             .then(snapshot => {
                 snapshot.docs.forEach(doc => {
                     if (doc.id === userId) {
@@ -191,6 +195,36 @@
                     "author": app.userId
                 }
             };
+
+            var db = firebase.firestore();
+            var docRef = db.collection("assignments").doc(searchId).collection("users").doc(app.userId)
+            docRef.get().then(function(doc) {
+                if (doc.exists) {
+                    var storage = firebase.storage();
+                    var storageReference = storage.ref(doc.data().reference);
+                    
+                    docRef.update({
+                        reference: objectRef.fullPath
+                    }).then(function()
+                    {
+                        storageReference.delete().catch(function(error) {
+                        console.log("Error: ", error);
+                        // Uh-oh, an error occurred!
+                        });
+                    }).catch(function(error) {
+                        console.error("Error adding document: ", error);
+                    });
+                } else {
+                    // doc.data() will be undefined in this case
+                    docRef.set({
+                        reference: objectRef.fullPath
+                    }).catch(function(error) {
+                        console.error("Error adding document: ", error);
+                    });
+                }
+            }).catch(function(error) {
+                console.log("Error getting document:", error);
+            });
 
             objectRef.put(selectedFile, metadata)
                 .then(() => {
