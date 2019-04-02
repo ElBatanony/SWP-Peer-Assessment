@@ -68,7 +68,7 @@
             <h1 class="title is-2" id="assignment">Loading...</h1>
             <h2 class="subtitle is-4" id="subject">Loading...</h2>
             <p class="box subtitle" id="description">Loading...</p>
-
+            <p class="box subtitle">Deadline: {{getDeadline()}}</p>
             <div class="container center is-medium">
                 <div class="file has-name">
                     <label class="file-label">
@@ -108,7 +108,16 @@
             user: null,
             assignment: null,
             linkz: "",
-            userId: null
+            userId: null,
+            deadline: null
+        },
+        methods: {
+            getDeadline: function()
+            {
+                var date = new Date();
+                date.setTime(this.deadline);
+                return date.toString();
+            }
         },
         mounted: () => {
             let userId; // Id of user entered the page
@@ -166,6 +175,7 @@
                 document.getElementById('assignment').innerHTML = name;
                 document.getElementById('description').innerHTML = description;
                 app.linkz = "review?id=" + searchId;
+                app.deadline = snapshot.data().deadline;
             }
             else {
                 // the assignment with specified ID does not exist

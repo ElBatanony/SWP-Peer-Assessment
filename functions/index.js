@@ -61,10 +61,12 @@ exports.getWork = functions.https.onCall((data, context) => {
             return db.collection("assignments").doc(assignemntID).collection("users").get().then(function (querySnapshot) {
                 done = [];
                 ref = "";
+                submit = false;
                 querySnapshot.forEach(function(doc)
                 {
                     if(doc.id == uid)
                     {
+                        submit = true;
                         if (doc.data().done)
                         {
                             done = doc.data().done.slice();
@@ -72,7 +74,14 @@ exports.getWork = functions.https.onCall((data, context) => {
                         return;
                     }
                 });
-             
+                
+                if(!submit)
+                {
+                    return {
+                        message: "No submit"
+                    };
+                }
+
                 querySnapshot.forEach(function(doc)
                 {
                     if(doc.id != uid && !(done.includes(doc.data().reference)))

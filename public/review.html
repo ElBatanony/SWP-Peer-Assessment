@@ -145,15 +145,19 @@
     {
         var getWork = firebase.functions().httpsCallable('getWork');
         getWork({assignmentID: app.searchId}).then(function(result) {
-            console.log(result.data.message);
             if(result.data.message === "Assignment don't finished yet")
             {
                 app.ref = "";
                 app.linkz = "";
-
                 window.location.href = "solutions?id=" + app.searchId;
             }
             else if (result.data.message === "All works are checked")
+            {
+                app.ref = "";
+                app.linkz = "";
+                window.location.href = "solutions?id=" + app.searchId;
+            }
+            else if (result.data.message === "No submit")
             {
                 app.ref = "";
                 app.linkz = "";
