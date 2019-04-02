@@ -85,6 +85,8 @@
                     </label>
                 </div>
             </div>
+            <br>
+            <a class="button is-warning" v-bind:href="linkz">Review</a>
         </div>
     </section>
         
@@ -95,7 +97,8 @@
     var app = new Vue({
         el: '#app',
         data: {
-            user: null
+            user: null,
+            linkz: ""
         }
     })
 
@@ -133,6 +136,7 @@
                 document.getElementById('subject').innerHTML = subject;
                 document.getElementById('assignment').innerHTML = name;
                 document.getElementById('description').innerHTML = description;
+                app.linkz = "review?id=" + searchId;
             }
             else {
                 // the assignment with specified ID does not exist
@@ -146,6 +150,7 @@
             document.getElementById("filename").innerHTML = file.files[0].name;
         }
     }
+    
 
     // uploading the files into the firebase database
     function uploadFile() {
