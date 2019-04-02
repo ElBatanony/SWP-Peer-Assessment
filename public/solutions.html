@@ -116,7 +116,8 @@
             {
                 var date = new Date();
                 date.setTime(this.deadline);
-                return date.toString();
+                parsedDate = date.toString().split(' ');
+                return parsedDate[0] + ' ' + parsedDate[1] + ' ' + parsedDate[2] + ' ' + parsedDate[3] + ' ' + parsedDate[4];
             }
         },
         mounted: () => {
