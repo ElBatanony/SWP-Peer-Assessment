@@ -72,7 +72,7 @@
 
             <h1 class="subtitle is-2">Your Assignments</h1>
             
-            <div class="box" v-for="assignment in assignments"  v-if="assignment.course == userDetails.course">
+            <div class="box" v-for="assignment in assignments"  v-if="(assignment.course == userDetails.course || userDetails.role == 'admin')">
                 
                 <div class="columns is-vcentered">
                     <div class="column is-9">
@@ -123,14 +123,29 @@
                     //console.log("Document data:", doc.data());
                     app.userDetails = doc.data();
 
-                    db.collection("assignments").where("course", "==", app.userDetails.course).get().then(function (querySnapshot) {
+                    if (app.userDetails.role == 'admin') {
 
-                        querySnapshot.forEach(function (doc) {
-                            // doc.data() is never undefined for query doc snapshots
-                            app.assignments.push(doc.data());
-                            app.assignments[app.assignments.length - 1].id = doc.id;
+                        db.collection("assignments").get().then(function (querySnapshot) {
+
+                            querySnapshot.forEach(function (doc) {
+                                // doc.data() is never undefined for query doc snapshots
+                                app.assignments.push(doc.data());
+                                app.assignments[app.assignments.length - 1].id = doc.id;
+                            });
                         });
-                    });
+
+                    } else {
+                        db.collection("assignments").where("course", "==", app.userDetails.course).get().then(function (querySnapshot) {
+
+                            querySnapshot.forEach(function (doc) {
+                                // doc.data() is never undefined for query doc snapshots
+                                app.assignments.push(doc.data());
+                                app.assignments[app.assignments.length - 1].id = doc.id;
+                            });
+                        });
+                    }
+
+                    
                 } else {
                     // doc.data() will be undefined in this case
                     console.log("No such document!");
