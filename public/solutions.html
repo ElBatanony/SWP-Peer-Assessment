@@ -93,7 +93,7 @@
                 </div>
             </div>
         <br>
-            <a class="button is-warning" v-bind:href="linkz">Review</a>
+            <a class="button is-warning" v-if="isAssignmentEnded" v-bind:href="linkz">Review</a>
 
         </div>
     </section>
@@ -109,7 +109,8 @@
             assignment: null,
             linkz: "",
             userId: null,
-            deadline: null
+            deadline: null,
+            isAssignmentEnded: false
         },
         methods: {
             getDeadline: function()
@@ -177,6 +178,7 @@
                 document.getElementById('description').innerHTML = description;
                 app.linkz = "review?id=" + searchId;
                 app.deadline = snapshot.data().deadline;
+                app.isAssignmentEnded = (app.deadline <= new Date().getTime());
             }
             else {
                 // the assignment with specified ID does not exist
