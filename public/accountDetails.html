@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Edit User Information - Peer Assessment SWP</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+        <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    
+        <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
+        <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+        <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+        <script>
+            // Initialize Firebase
+            var config = {
+                apiKey: "AIzaSyBoFhrw9RehDmHHFgOV4aFi3TrBfT_PY48",
+                authDomain: "swp-peer-assessment.firebaseapp.com",
+                databaseURL: "https://swp-peer-assessment.firebaseio.com",
+                projectId: "swp-peer-assessment",
+                storageBucket: "swp-peer-assessment.appspot.com",
+                messagingSenderId: "998218435509"
+            };
+            firebase.initializeApp(config);
+    
+        </script>
+    
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="utils.js"></script>
+    
+        <link rel="icon" href="peer-review-icon.png">
+    
+    </head>
+
+<body> <div id="app">
+
+    <nav class="navbar is-success" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/">
+                <h1 class="is-size-4">Peer Assessment</h1>
+            </a>
+        
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="/">Home</a>
+                <a class="navbar-item" href="/assignments">Assignments</a>
+                <a class="navbar-item" v-if="userDetails.role == 'admin'" href="/accounts">Users</a>
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item" v-if="user">
+                    <a class="button is-success is-inverted" onclick="signOut()">Sign Out</a>
+                </div>
+
+                <div class="navbar-item" v-if="!user">
+                    <a class="button is-success is-inverted" href="/login">Sign in</a>
+                </div>
+            </div>
+        </div>
+
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <h1 class="subtitle is-2">Edit User Information</h1>
+
+            <div class="box">
+
+                <p v-if="errors.length">
+                    <b>Please correct the following error(s):</b>
+                    <ul>
+                        <li v-for="error in errors">{{ error }}</li>
+                    </ul>
+                </p>
+
+                <div class="field">
+                    <label class="label">Email</label>
+                    <div class="control">
+                        <input v-model="email" id="userEmail" class="input" type="text" readonly>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Name</label>
+                    <div class="control">
+                        <input v-model="name" id="userFirstName" class="input" type="text">
+                    </div>
+                </div>
+
+                <div class="columns">
+                    <div class="field column">
+                        <label class="label">Role</label>
+                        <div class="control">
+                            <div class="select">
+                                <select v-model="roleIndex" id="role-select">
+                                    <option disabled value="" >Choose a role</option>
+                                    <option v-for="(role, index) in rolesArr" :value="index">{{role.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field column" v-if="roleIndex !== null && rolesArr[roleIndex].name == 'student'">
+                        <label class="label">Course</label>
+                        <div class="control">
+                            <div class="select">
+                                <select v-model="courseIndex" id="course-select" v-on:change="courseChanged">
+                                    <option disabled value="">Choose a course</option>
+                                    <option v-for="(course, index) in coursesArr" :value="index">{{course.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field column" v-if="roleIndex !== null && rolesArr[roleIndex].name == 'student'">
+                        <label class="label">Group</label>
+                        <div class="control">
+                            <div class="select">
+                                <select v-model="groupIndex" id="group-select">
+                                    <option disabled value="">Choose a group</option>
+                                    <option v-for="(group, index) in groupsArr" :value="index">{{group}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="has-text-right">
+                    <a class="button is-medium is-danger" v-on:click="deleteUser()">Delete User</a>
+                    <a class="button is-medium is-warning" v-on:click="goTo('/accounts')">Cancel</a>
+                    <a class="button is-medium is-success" v-on:click="checkForm()">Save changes</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</div> </body>
+
+<script>
+
+    let app = new Vue({
+        el: "#app",
+        data: {
+            db: null,
+            errors: [],
+            email: null,
+            name: null,
+            rolesArr: [],
+            roleIndex: null,
+            coursesArr: [],
+            courseIndex: null,
+            groupsArr: [],
+            groupIndex: null,
+            user: {},
+            userDetails: {}
+        },
+        mounted: () => {
+            let db = firebase.firestore();
+
+            this.db = db;
+
+            firebase.auth().onAuthStateChanged(user => {
+                app.user = user;
+                if(user) {
+                    db.collection("users").doc(user.uid).get()
+                    .then(doc => {
+                        if (doc.exists) {
+                            app.userDetails = doc.data();
+                        } else {
+                            // doc.data() will be undefined in this case
+                            console.log("No such document");
+                        }
+                    }).catch(erorr => {
+                        console.log("Error getting document: ", error);
+                    });
+                } else {
+                    // User is signed out
+                    window.location.href="login";
+                }
+            });
+
+            db.collection("roles").get()
+            .then(querySnapshot => {
+                querySnapshot.forEach(doc => {
+                    // doc.data() is never undefined for query doc snapshots
+                    app.rolesArr.push(doc.data());
+                });
+            });
+
+
+            db.collection("courses").get()
+            .then(querySnapshot => {
+                querySnapshot.forEach(doc => {
+                    // doc.data() is never undefined for query doc snapshots
+                    app.coursesArr.push(doc.data());
+                });
+            });
+
+            let url_string = window.location.href
+            let url = new URL(url_string);
+            let id = url.searchParams.get("id");
+
+            db.collection("users").doc(id).get()
+            .then(doc => {
+                if (doc.exists) {
+                    app.setParameters(doc);
+                } else {
+                    console.log("No such user!");
+                    goTo('404');
+                }
+            }).catch(function(error) {
+                console.log("Error getting user information:", error);
+            });
+
+            
+
+        },
+        methods: {
+            goTo: goTo,
+
+            setParameters: userInfo => {
+                app.email = userInfo.data().email;
+                app.name = userInfo.data().name;
+                
+                for (i = 0; i < app.rolesArr.length; i++) {
+                    if (app.rolesArr[i].name === userInfo.data().role) {
+                        app.roleIndex = i;
+                    }
+                }
+
+                if (userInfo.data().role === 'student') {
+                    for (i = 0; i < app.coursesArr.length; i++) {
+                       if (app.coursesArr[i].name === userInfo.data().course) {
+                            app.courseIndex = i;
+                        }
+                    }
+
+                    app.courseChanged().then( () => {
+                        console.log(app.groupsArr);
+                        for (i = 0; i < app.groupsArr.length; i++) {
+                            if (app.groupsArr[i] === userInfo.data().group) {
+                                    app.groupIndex = i;
+                            }
+                        }
+                    });
+                }
+            },
+
+            checkForm: function(e) {
+                console.log();
+                if (this.name && !(this.roleIndex === null) && 
+                    ((app.rolesArr[this.roleIndex].name !== 'student') || 
+                    (!(this.courseIndex === null) && !(this.groupIndex === null)))) {
+                        console.log(!(this.courseIndex === null) && !(this.groupIndex === null));
+                        this.saveChanges();
+                        return true;
+                }
+
+                this.errors=[]
+                
+                if (!this.name) {
+                    this.errors.push("Name required.");
+                }
+                if (this.roleIndex === null) {
+                    this.errors.push("Role required.");
+                }
+                if (this.roleIndex !== null && app.rolesArr[this.roleIndex].name === 'student' && this.courseIndex === null) {
+                    this.errors.push("Course required");
+                }
+                if (this.roleIndex !== null && app.rolesArr[this.roleIndex].name === 'student' && this.groupIndex === null) {
+                    this.errors.push("Group required");
+                }
+            },
+
+            saveChanges: () => {
+                let db = this.db;
+
+                let url_string = window.location.href
+                let url = new URL(url_string);
+                let id = url.searchParams.get("id");
+
+                let role = app.rolesArr[app.roleIndex].name;
+                let course = null;
+                let group = null;
+
+                if (role === 'student') {
+                    course = app.coursesArr[app.courseIndex].name
+                    group = app.groupsArr[app.groupIndex]
+                }
+
+                db.collection("users").doc(id).update({
+                    name: app.name,
+                    role: role,
+                    course: course,
+                    group: group
+                }).then(() => {
+                    goTo("/accounts");
+                }).catch(error => {
+                    console.error("Error adding user information: ", error);
+                });
+            },
+
+            deleteUser : function () {
+                let url_string = window.location.href
+                let url = new URL(url_string);
+                let id = url.searchParams.get("id");
+
+                let db = firebase.firestore();
+                db.collection("users").doc(id).delete().then(function () {
+                    console.log("User successfully deleted!");
+                    goTo("/accounts");
+                }).catch(function (error) {
+                    console.error("Error removing user: ", error);
+                });
+            },
+
+            courseChanged: () => {
+                app.groupIndex = null;
+                return db.collection("courses").get()
+                .then(querySnapshot => {
+                    querySnapshot.forEach(doc => {
+                        if (doc.data().name === app.coursesArr[app.courseIndex].name) {
+                            app.groupsArr = doc.data().groups;
+                        }
+                    });
+                });
+            }
+        }
+    });
+
+    
+
+    
+
+</script>
+
+</html>

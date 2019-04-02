@@ -51,6 +51,7 @@
             <div class="navbar-start">
                 <a class="navbar-item" href="/"> Home</a>
                 <a class="navbar-item" href="/assignments"> Assignments </a>
+                <a class="navbar-item" v-if="userDetails.role == 'admin'" href="/accounts">Users</a>
             </div>
     
             <div class="navbar-end">
@@ -92,6 +93,7 @@
     el: '#app',
     data: {
       user: null,
+      userDetails: {},
       notifications: []
     },
     methods: {
@@ -110,18 +112,20 @@
 
       if (user) {
           
-
           firebase.firestore().collection("users").doc(user.uid).get().then(function (doc) {
               if (doc.exists) {
-                  app.notifications = doc.data().notifications
+                  app.notifications = doc.data().notifications;
+                  app.userDetails = doc.data();;
               } else {
                   console.log("No such document!");
               }
           }).catch(function (error) {
               console.log("Error getting document:", error);
           });
-
-      }
+      } else {
+            // User is signed out.
+            window.location.href = "login";
+        }
   });
 
 </script>

@@ -46,6 +46,7 @@ exports.addUserDoc = functions.auth.user().onCreate((user) => {
             console.log("Error fetching user data:", error);
         });
     
+
 });
 
 exports.getWork = functions.https.onCall((data, context) => {
