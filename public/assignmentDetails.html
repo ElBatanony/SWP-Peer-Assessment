@@ -11,6 +11,10 @@
     <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
     <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
     <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+
+    <link href="/bulma-calendar/bulma-calendar.css" rel="stylesheet">
+    <script src="/bulma-calendar/bulma-calendar.js"></script>
+
     <script>
         // Initialize Firebase
         var config = {
@@ -113,7 +117,8 @@
                     <span class="button is-medium is-success" onclick="SubmitAssignment()">Save changes</span>
                 </div>
             </div>
-
+            <p>Deadline: {{getDeadline()}}</p>
+            <input id="calendarDeadline" type="datetime" lang="en" data-display-mode="inline" data-close-on-select="false">
             
         </div>
     </section>
@@ -124,6 +129,7 @@
         el: '#app',
         data: {
             user: null,
+            deadline: (new Date()).getTime(),
             userDetails: {}
         },
         methods: {
@@ -138,6 +144,12 @@
                 }).catch(function (error) {
                     console.error("Error removing document: ", error);
                 });
+            },
+            getDeadline: function()
+            {
+                var date = new Date();
+                date.setTime(this.deadline);
+                return date.toString();
             }
         }
     })
@@ -204,6 +216,9 @@
     {
         document.getElementById('assignmentName').value = curDoc.data().name;
         document.getElementById('assignmentDesc').value = curDoc.data().description;
+
+        app.deadline = curDoc.data().deadline;
+
         courseSelect = document.getElementById('course-select');
         var db = firebase.firestore();
         db.collection("courses").get().then(function(querySnapshot) {
@@ -242,6 +257,21 @@
             }
             )});
         });
+
+        
+
+        var calendars = bulmaCalendar.attach('[type="datetime"]');
+
+        // Loop on each calendar initialized
+        for (var i = 0; i < calendars.length; i++) {
+            // Add listener to date:selected event
+            calendars[i].on('select', date => {
+                if (new Date(date.data.value()).getTime()  > new Date().getTime() )
+                {
+                    app.deadline = new Date(date.data.value()).getTime();
+                }
+            });
+        }
     }
   
     
@@ -259,7 +289,8 @@
     name: nameAssi.value,
     description: descAssi.value,
     course: courseSelect.value,
-    subject: subSelect.value
+    subject: subSelect.value,
+    deadline: app.deadline
     })
     .then(function() {
         window.location.href = "assignments";

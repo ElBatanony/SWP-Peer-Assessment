@@ -84,7 +84,7 @@
                         <input class="button is-outlined" type="submit" id="uploadButton" onclick="uploadFile()" value="Submit">
                     </label>
                 </div>
-            </div>
+          </div>
 
             <div class="field" v-if="assignment !== null">
                 <label class="label">Uploaded</label>
@@ -92,6 +92,9 @@
                 <input v-model="assignment" id="uploadedAssignment" class="input is-static" type="text" readonly>
                 </div>
             </div>
+        <br>
+            <a class="button is-warning" v-bind:href="linkz">Review</a>
+
         </div>
     </section>
         
@@ -103,7 +106,9 @@
         el: '#app',
         data: {
             user: null,
-            assignment: null
+            assignment: null,
+            linkz: "",
+            userId: null
         },
         mounted: () => {
             let userId; // Id of user entered the page
@@ -113,17 +118,19 @@
                 app.user = user;
                 if (user) {
                     userId = user.uid; 
+                    app.userId = userId;
                 } else {
                     window.location.href = "login";
                 }
             });
 
+        
             let db = firebase.firestore();
             let url_string = window.location.href
             let url = new URL(url_string);
             let searchId = url.searchParams.get("id");
 
-            firebase.firestore().collection("assignments").doc(searchId).collection("users").get()
+            firebase.firestore().collection("assignments").doc(searchId).collection("users").get() 
             .then(snapshot => {
                 snapshot.docs.forEach(doc => {
                     if (doc.id === userId) {
@@ -158,6 +165,7 @@
                 document.getElementById('subject').innerHTML = subject;
                 document.getElementById('assignment').innerHTML = name;
                 document.getElementById('description').innerHTML = description;
+                app.linkz = "review?id=" + searchId;
             }
             else {
                 // the assignment with specified ID does not exist
@@ -171,6 +179,7 @@
             document.getElementById("filename").innerHTML = file.files[0].name;
         }
     }
+    
 
     // uploading the files into the firebase database
     function uploadFile() {
@@ -183,9 +192,39 @@
 
             let metadata = {
                 customMetadata: {
-                    "author": userId
+                    "author": app.userId
                 }
             };
+
+            var db = firebase.firestore();
+            var docRef = db.collection("assignments").doc(searchId).collection("users").doc(app.userId)
+            docRef.get().then(function(doc) {
+                if (doc.exists) {
+                    var storage = firebase.storage();
+                    var storageReference = storage.ref(doc.data().reference);
+                    
+                    docRef.update({
+                        reference: objectRef.fullPath
+                    }).then(function()
+                    {
+                        storageReference.delete().catch(function(error) {
+                        console.log("Error: ", error);
+                        // Uh-oh, an error occurred!
+                        });
+                    }).catch(function(error) {
+                        console.error("Error adding document: ", error);
+                    });
+                } else {
+                    // doc.data() will be undefined in this case
+                    docRef.set({
+                        reference: objectRef.fullPath
+                    }).catch(function(error) {
+                        console.error("Error adding document: ", error);
+                    });
+                }
+            }).catch(function(error) {
+                console.log("Error getting document:", error);
+            });
 
             objectRef.put(selectedFile, metadata)
                 .then(() => {

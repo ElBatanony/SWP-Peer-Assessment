@@ -51,8 +51,7 @@ exports.addUserDoc = functions.auth.user().onCreate((user) => {
 
 exports.getWork = functions.https.onCall((data, context) => {
         const assignemntID = data.assignmentID;
-        const uid = data.uid;//auth.uid
-
+        const uid = context.auth.uid;
         var db = admin.firestore();
         return db.collection("assignments").doc(assignemntID).get().then(function (doc) {
             if (doc.data().deadline > (new Date().getTime()))
@@ -66,14 +65,14 @@ exports.getWork = functions.https.onCall((data, context) => {
                 {
                     if(doc.id == uid)
                     {
-                        done = doc.data().done;
+                        if (doc.data().done)
+                        {
+                            done = doc.data().done.slice();
+                        }
                         return;
                     }
                 });
-                if(!done)
-                {
-                   done = [];
-                }
+             
                 querySnapshot.forEach(function(doc)
                 {
                     if(doc.id != uid && !(done.includes(doc.data().reference)))
