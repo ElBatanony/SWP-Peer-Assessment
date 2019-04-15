@@ -75,15 +75,18 @@
             <div class="box" v-for="assignment in assignments"  v-if="(assignment.course == userDetails.course || userDetails.role == 'admin')">
                 
                 <div class="columns is-vcentered">
-                    <div class="column is-9">
+                    <div class="column is-8">
                         <h1 class="subtitle is-3">{{assignment.name}} </h1>
                         <div class="tags has-addons">
                             <span class="tag is-light is-medium">{{assignment.course}}</span>
                             <span class="tag is-success is-medium">{{assignment.subject}}</span>
                         </div>
                     </div>
-                    <div class="column is-3">
+                    <div class="column is-4">
+                        <div class="buttons level-right">
+                        <a class="button is-medium is-info" v-if="userDetails.role == 'admin'" v-on:click="goTo('worksList?id='+assignment.id)">View submissions</a>
                         <a class="button is-medium is-info" v-if="userDetails.role == 'admin'" v-on:click="goTo('assignmentDetails?id='+assignment.id)">Edit Assignment</a>
+                        </div>
                         <a class="button is-medium is-warning" v-if="userDetails.role != 'admin'" v-on:click="goTo('solutions?id='+assignment.id)">View Assignment</a>
                         
                     </div>

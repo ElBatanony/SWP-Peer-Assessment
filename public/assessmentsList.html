@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit assignment - Peer Assessment SWP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+
+    <link href="/bulma-calendar/bulma-calendar.css" rel="stylesheet">
+    <script src="/bulma-calendar/bulma-calendar.js"></script>
+
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBoFhrw9RehDmHHFgOV4aFi3TrBfT_PY48",
+            authDomain: "swp-peer-assessment.firebaseapp.com",
+            databaseURL: "https://swp-peer-assessment.firebaseio.com",
+            projectId: "swp-peer-assessment",
+            storageBucket: "swp-peer-assessment.appspot.com",
+            messagingSenderId: "998218435509"
+        };
+        firebase.initializeApp(config);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="utils.js"></script>
+
+    <link rel="icon" href="peer-review-icon.png">
+</head>
+
+<body> <div id="app">
+
+    <nav class="navbar is-success" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/">
+                <h1 class="is-size-4"> Peer Assessment </h1>
+            </a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="/"> Home</a>
+                <a class="navbar-item" href="/assignments"> Assignments </a>
+                <a class="navbar-item" v-if="userDetails.role == 'admin'" href="/accounts">Users</a>
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item" v-if="user">
+                    <a class="button is-success is-inverted" onclick="signOut()">Sign out</a>
+                </div>
+
+                <div class="navbar-item" v-if="!user">
+                    <a class="button is-success is-inverted" href="/login">Sign in</a>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <h1 class="subtitle is-2">Work of {{username}}</h1>
+            <a id="downloadLink" class="button is-success" onclick="downloadWork()" target="_blank">Download the work</a>
+
+            <p>Reviews</p>
+            <div id="reviews"></div>
+        </div>
+    </section>
+</div> </body>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            user: null,
+            username: "",
+            linkz: "",
+            fname: "",
+            deadline: (new Date()).getTime(),
+            userDetails: {},
+            usersSubmissions: []
+        }
+    })
+
+    function downloadWork()
+    {
+        axios({
+            url: app.linkz,
+            method: 'GET',
+            responseType: 'blob', // important
+        }).then((response) => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', app.fname);
+            document.body.appendChild(link);
+            link.click();
+        });
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+        app.user = user;
+        if(user) {
+            db.collection("users").doc(user.uid).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        app.userDetails = doc.data();
+                    } else {
+                        // doc.data() will be undefined in this case
+                        console.log("No such document");
+                    }
+                }).catch(erorr => {
+                console.log("Error getting document: ", error);
+            });
+        } else {
+            // User is signed out
+            window.location.href="login";
+        }
+    });
+
+    var url_string = window.location.href
+    var url = new URL(url_string);
+    var assignmentId = url.searchParams.get("assignmentId");
+    var userId = url.searchParams.get("userId");
+    var db = firebase.firestore();
+
+    var ref = db.collection("assignments").doc(assignmentId).collection("users").doc(userId);
+    ref.get().then(function(doc) {
+        if (doc.exists) {
+            var fileRef = firebase.storage().ref(doc.data().reference);
+            fileRef.getDownloadURL().then(function(url) {
+                // `url` is the download URL for 'images/stars.jpg'
+                // This can be downloaded directly:
+                app.fname = fileRef.name;
+                app.linkz = url;
+            }).catch(function(error) {
+                // Handle any errors
+            });
+        } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!");
+        }
+    }).catch(function(error) {
+        console.log("Error getting document:", error);
+    });
+
+    var ref = db.collection("users").doc(userId);
+    ref.get().then(function(doc) {
+        if (doc.exists) {
+            app.username = doc.data().name;
+        } else {
+            app.username = "anonymous" // Handle any errors
+            console.log("No such document!");
+        }
+    }).catch(function(error) {
+        console.log("Error getting document:", error);
+    });
+
+    db.collection("assignments").doc(assignmentId).collection("users").doc(userId).collection("reviews").get().then(function(querySnapshot) {
+        var subm = document.getElementById("reviews");
+        querySnapshot.forEach(function(doc) {
+            // doc.data() is never undefined for query doc snapshots
+            var ref = db.collection("users").doc( "" + doc.data().author);
+            ref.get().then(function(docU) {
+                if (docU.exists) {
+                    subm.innerHTML += "<a href='/assessmentReview?assessmentId=" + doc.id + "'>Review by " + docU.data().name + "</a><br>"
+                } else {
+                    // doc.data() will be undefined in this case
+                    console.log("No such document!");
+                    subm.innerHTML += "<a href='/assessmentsList?assignmentId=" + id + "&userId=" + doc.id + "'>Review by anonymous</a><br>"
+                }
+            }).catch(function(error) {
+                console.log("Error getting document:", error);
+            });
+        });
+    });
+
+</script>
+
+</html>
