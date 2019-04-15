@@ -119,7 +119,9 @@
             </div>
             <p>Deadline: {{getDeadline()}}</p>
             <input id="calendarDeadline" type="datetime" lang="en" data-display-mode="inline" data-close-on-select="false">
-            
+            <div id="submissions">
+
+            </div>
         </div>
     </section>
 </div> </body>
@@ -130,7 +132,8 @@
         data: {
             user: null,
             deadline: (new Date()).getTime(),
-            userDetails: {}
+            userDetails: {},
+            usersSubmissions: []
         },
         methods: {
             deleteAssignment : function () {
@@ -182,6 +185,7 @@
     docRef.get().then(function(doc) {
         if (doc.exists) {
             SetParametrs(doc);
+            GetReviews();
         } else {
             // doc.data() will be undefined in this case
             console.log("No such document!");
@@ -193,7 +197,31 @@
     
   function goToAssignments() {
     window.location.href = "assignments";
-  }      
+  }
+
+  function GetReviews(){
+      var subm = document.getElementById("submissions");
+      db.collection("assignments").doc(id).collection("users").get().then(function(querySnapshot) {
+          querySnapshot.forEach(function(doc) {
+              // doc.data() is never undefined for query doc snapshots
+              var ref = db.collection("users").doc( "" + doc.id);
+              ref.get().then(function(docU) {
+                  if (docU.exists) {
+
+                      subm.innerHTML += "<a href='/assessmentsList?assignmentId=" + id + "&userId=" + doc.id + "'>Work by " + docU.data().name + "</a><br>"
+                  } else {
+                      // doc.data() will be undefined in this case
+                      console.log("No such document!");
+
+                      subm.innerHTML += "<a href='/assessmentsList?assignmentId=" + id + "&userId=" + doc.id + "'>Work by anonymous</a><br>"
+                  }
+              }).catch(function(error) {
+                  console.log("Error getting document:", error);
+              });
+          });
+      });
+  }
+
   function courses (courseName)
   {
       subSelect = document.getElementById('subject-select');
