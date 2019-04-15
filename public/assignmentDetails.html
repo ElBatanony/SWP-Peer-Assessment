@@ -76,16 +76,23 @@
             
             <div class="box">
 
+                <p v-if="errors.length">
+                    <b>Please correct the following error(s):</b>
+                    <ul>
+                        <li v-for="error in errors">{{ error }}</li>
+                    </ul>
+                </p>
+
                 <div class="field">
                     <label class="label">Name</label>
                     <div class="control">
-                        <input id="assignmentName" class="input" type="text" placeholder="Enter the name of the assignment">
+                        <input v-model="name" id="assignmentName" class="input" type="text" placeholder="Enter the name of the assignment">
                     </div>
                 </div>
                 <div class="field">
                     <label class="label">Description</label>
                     <div class="control">
-                        <textarea id="assignmentDesc" class="textarea" placeholder="Enter the description of the assignment" ></textarea>
+                        <textarea v-model="description" id="assignmentDesc" class="textarea" placeholder="Enter the description of the assignment" ></textarea>
                     </div>
                 </div>
                 <div class="columns">
@@ -200,6 +207,9 @@
         data: {
             user: null,
             deadline: (new Date()).getTime(),
+            errors: [],
+            name: null,
+            description: null,
             userDetails: {},
             reviewFields: [],
             fieldToAdd: null,
@@ -210,6 +220,22 @@
             typesArr: ['Text', 'Multiline text']
         },
         methods: {
+            checkForm: () => {
+                if (app.name && app.description) {
+                    return true;
+                }
+
+                app.errors = [];
+
+                if (!app.name) {
+                    app.errors.push("Assignment name required.");
+                }
+                if (!app.description) {
+                    app.errors.push("Assignment description required.");
+                }
+
+                return false;
+            },
             deleteAssignment : function () {
                 var url_string = window.location.href
                 var url = new URL(url_string);
@@ -338,7 +364,9 @@
   function SetParametrs(curDoc)
     {
         document.getElementById('assignmentName').value = curDoc.data().name;
+        app.name = curDoc.data().name;
         document.getElementById('assignmentDesc').value = curDoc.data().description;
+        app.description = curDoc.data().description;
 
         app.reviewFields = curDoc.data().reviewFields;
 
@@ -405,14 +433,15 @@
     var url_string = window.location.href
     var url = new URL(url_string);
     var id = url.searchParams.get("id");
-    nameAssi = document.getElementById('assignmentName');
-    descAssi = document.getElementById('assignmentDesc');
+    if (!app.checkForm()) {
+        return;
+    }
     courseSelect = document.getElementById('course-select');
     subSelect = document.getElementById('subject-select');
     var db = firebase.firestore();
     db.collection("assignments").doc(id).update({
-    name: nameAssi.value,
-    description: descAssi.value,
+    name: app.name,
+    description: app.description,
     course: courseSelect.value,
     subject: subSelect.value,
     reviewFields: app.reviewFields,
