@@ -117,6 +117,77 @@
                     <span class="button is-medium is-success" onclick="SubmitAssignment()">Save changes</span>
                 </div>
             </div>
+
+            <h1 class="subtitle is-2">Review</h1>
+            
+            <div class="box">        
+                <div class="columns" v-for="(field, index) in reviewFields">
+                    <div class="field column is-one-fifths">
+                        <label class="label">Field name</label>
+                        <input v-model="field.name" id="reviewFieldName" class="input" type="text" readonly>
+                    </div>
+                    <div class="field column is-one-fifths">
+                        <label class="label">Type</label>
+                        <div class="control">
+                            <div class="select">
+                                <select id="field-type-select">
+                                    <option>{{ field.type }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field column is-two-fifths">
+                        <label class="label">Field description</label>
+                        <div class="control">
+                            <textarea v-model="field.description" id="reviewFieldDescription" class="textarea" readonly ></textarea>
+                        </div>
+                    </div>
+                    <div class="field column is-one-fifths">
+                        <label class="label">Control</label>
+                        <div class="control">
+                            <button class="button is-danger" v-on:click="deleteReviewField(index)">Delete field</button>
+                        </div>
+                        <br>
+                        <div class="control" v-if="index != 0">
+                            <button class="button is-warning" v-on:click="moveFieldUp(index)">Move up</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="box">
+                    <p v-if="addFieldErrors.length">
+                        <b>Please correct the following error(s):</b>
+                        <ul>
+                            <li v-for="error in addFieldErrors">{{ error }}</li>
+                        </ul>
+                    </p>
+                    <div class="field">
+                        <label class="label">Field name</label>
+                        <input v-model="addReviewFieldName" class="input" type="text" placeholder="Enter the name of the field">
+                    </div>
+                    <div class="field">
+                        <label class="label">Type</label>
+                        <div class="control">
+                            <div class="select">
+                                <select v-model="addReviewFieldTypeIndex" id="group-select">
+                                    <option disabled value="">Choose a field type</option>
+                                    <option v-for="(type, index) in typesArr" :value="index">{{type}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Field description</label>
+                        <div class="control">
+                            <textarea v-model="addReviewFieldDescription" class="textarea" placeholder="Enter the description of the field" ></textarea>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button class="button is-success" v-on:click="addField">Add field</button>
+                    </div>
+                </div>
+            </div>
+
+
             <p>Deadline: {{getDeadline()}}</p>
             <input id="calendarDeadline" type="datetime" lang="en" data-display-mode="inline" data-close-on-select="false">
         </div>
@@ -129,7 +200,14 @@
         data: {
             user: null,
             deadline: (new Date()).getTime(),
-            userDetails: {}
+            userDetails: {},
+            reviewFields: [],
+            fieldToAdd: null,
+            addReviewFieldName: '',
+            addReviewFieldTypeIndex: null,
+            addReviewFieldDescription: '',
+            addFieldErrors: [],
+            typesArr: ['Text', 'Multiline text']
         },
         methods: {
             deleteAssignment : function () {
@@ -143,6 +221,51 @@
                 }).catch(function (error) {
                     console.error("Error removing document: ", error);
                 });
+            },
+            addField: () => {
+                if (app.checkAddedField()) {
+                    app.reviewFields.push({
+                        name: app.addReviewFieldName, 
+                        type: app.typesArr[app.addReviewFieldTypeIndex],
+                        description: app.addReviewFieldDescription
+                    });
+                    app.addReviewFieldName = '';
+                    app.addReviewFieldTypeIndex = null;
+                    app.addReviewFieldDescription = '';
+                }
+            },
+            moveFieldUp: (index) => {
+                if (index > 0) {
+                    let tempReviewFields = [...app.reviewFields];
+                    tempReviewFields[index] = app.reviewFields[index-1];
+                    tempReviewFields[index-1] = app.reviewFields[index];
+                    app.reviewFields = [...tempReviewFields];
+                }
+            },
+            deleteReviewField: (index) => {
+                app.reviewFields.splice(index, 1);
+            },
+            checkAddedField: () => {
+                if(app.addReviewFieldName != ''
+                    && app.addReviewFieldTypeIndex != null 
+                    && app.addReviewFieldDescription != '') 
+                {
+                    return true;
+                }
+
+                app.addFieldErrors = [];
+
+                if (app.addReviewFieldName == '') {
+                    app.addFieldErrors.push("Name of the field required");
+                }
+                if (app.addReviewFieldTypeIndex == null) {
+                    app.addFieldErrors.push("Type of the field required");
+                }
+                if (app.addReviewFieldDescription == '') {
+                    app.addFieldErrors.push("Description of the field required");
+                }
+
+                return false;
             },
             getDeadline: function()
             {
@@ -217,6 +340,8 @@
         document.getElementById('assignmentName').value = curDoc.data().name;
         document.getElementById('assignmentDesc').value = curDoc.data().description;
 
+        app.reviewFields = curDoc.data().reviewFields;
+
         app.deadline = curDoc.data().deadline;
 
         courseSelect = document.getElementById('course-select');
@@ -290,6 +415,7 @@
     description: descAssi.value,
     course: courseSelect.value,
     subject: subSelect.value,
+    reviewFields: app.reviewFields,
     deadline: app.deadline
     })
     .then(function() {
