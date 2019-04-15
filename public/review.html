@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
     <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
     <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
         // Initialize Firebase
         var config = {
@@ -69,7 +70,7 @@
             <h1 class="title is-2" id="assignment">Loading...</h1>
             <h2 class="subtitle is-4" id="subject">Loading...</h2>
             <p class="box subtitle" id="description">Loading...</p>
-            <a id="downloadLink" class="button is-success" v-bind:href="linkz" target="_blank">Download</a>
+            <a id="downloadLink" class="button is-success" onclick="downloadWork()" target="_blank">Download</a>
             <a class="button is-warning" onclick="nextWork()">Finish review</a>
         </div>
     </section>
@@ -83,6 +84,7 @@
         data: {
             user: null,
             linkz: "",
+            fname: "",
             done: [],
             searchId: ""
         }
@@ -139,7 +141,23 @@
                 window.location.replace(window.location.origin + "/404");
             }
         });
-    
+
+    function downloadWork()
+    {
+        axios({
+            url: app.linkz,
+            method: 'GET',
+            responseType: 'blob', // important
+        }).then((response) => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', app.fname);
+            document.body.appendChild(link);
+            link.click();
+        });
+    }
+
 
     function getWorkWrapper()
     {
@@ -149,22 +167,19 @@
             {
                 app.ref = "";
                 app.linkz = "";
-                alert(result.data.message);
-                window.location.href = "solutions?id=" + app.searchId;
+                window.location.href = "solutions?id=" + app.searchId + "&errorCode=" + 1;
             }
             else if (result.data.message === "All works are checked")
             {
                 app.ref = "";
                 app.linkz = "";
-                alert(result.data.message);
-                window.location.href = "solutions?id=" + app.searchId;
+                window.location.href = "solutions?id=" + app.searchId + "&errorCode=" + 2;
             }
             else if (result.data.message === "No submit")
             {
                 app.ref = "";
                 app.linkz = "";
-                alert(result.data.message);
-                window.location.href = "solutions?id=" + app.searchId;
+                window.location.href = "solutions?id=" + app.searchId + "&errorCode=" + 3;
             }
             else
             {
@@ -173,8 +188,7 @@
                 fileRef.getDownloadURL().then(function(url) {
                 // `url` is the download URL for 'images/stars.jpg'
                 // This can be downloaded directly:
-                var a = document.getElementById("downloadLink");
-                a.download = fileRef.name;
+                app.fname = fileRef.name;
                 app.linkz = url;
                 }).catch(function(error) {
                 // Handle any errors
