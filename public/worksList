@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Solutions - Peer Assessment SWP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css"/>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBoFhrw9RehDmHHFgOV4aFi3TrBfT_PY48",
+            authDomain: "swp-peer-assessment.firebaseapp.com",
+            databaseURL: "https://swp-peer-assessment.firebaseio.com",
+            projectId: "swp-peer-assessment",
+            storageBucket: "swp-peer-assessment.appspot.com",
+            messagingSenderId: "998218435509"
+        };
+        firebase.initializeApp(config);
+
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="utils.js"></script>
+
+    <link rel="icon" href="peer-review-icon.png">
+</head>
+
+<body>
+<div id="app">
+
+    <nav class="navbar is-success" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/">
+                <h1 class="is-size-4"> Peer Assessment </h1>
+            </a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+               data-target="navbarBasicExample">
+                <span aria-hidden="true"></span> <span aria-hidden="true"></span> <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="/"> Home</a>
+                <a class="navbar-item" href="/assignments"> Assignments </a>
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item" v-if="user">
+                    <a class="button is-success is-inverted" onclick="signOut()">Sign out</a>
+                </div>
+
+                <div class="navbar-item" v-if="!user">
+                    <a class="button is-success is-inverted" href="/login">Sign in</a>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+
+            <h1 class="title is-2" id="assignment">Loading...</h1>
+            <h2 class="subtitle is-4" id="subject">Loading...</h2>
+            <p class="box subtitle" id="description">Loading...</p>
+            <h3 class="subtitle is-4">List of works</h3>
+            <div id="submissions"></div>
+    </section>
+
+</div>
+</body>
+
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            user: null,
+            usersSubmissions: []
+        },
+        methods: {
+            getDeadline: function () {
+                var date = new Date();
+                date.setTime(this.deadline);
+                parsedDate = date.toString().split(' ');
+                return parsedDate[0] + ' ' + parsedDate[1] + ' ' + parsedDate[2] + ' ' + parsedDate[3] + ' ' + parsedDate[4];
+            }
+        },
+        mounted: () => {
+            let userId; // Id of user entered the page
+
+            // Automatic signing-in into the system
+            firebase.auth().onAuthStateChanged(function (user) {
+                app.user = user;
+                if (user) {
+                    userId = user.uid;
+                    app.userId = userId;
+                } else {
+                    window.location.href = "login";
+                }
+            });
+
+
+            let db = firebase.firestore();
+            let url_string = window.location.href
+            let url = new URL(url_string);
+            let searchId = url.searchParams.get("id");
+
+            firebase.firestore().collection("assignments").doc(searchId).collection("users").get()
+                .then(snapshot => {
+                    snapshot.docs.forEach(doc => {
+                        if (doc.id === userId) {
+                            let path = doc.data().reference;
+                            let parsedPath = path.split('/');
+                            app.assignment = parsedPath[parsedPath.length - 1];
+                        }
+                    });
+                });
+        }
+    })
+
+    let db = firebase.firestore();
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    var searchId = url.searchParams.get("id");
+    var codeError = url.searchParams.get("errorCode");
+
+    if (codeError) {
+        text = document.getElementById("errMessage");
+        if (codeError === "1") {
+            text.innerText = "Assignment don't finished yet";
+        } else if (codeError === "2") {
+            app.linkz = "";
+            text.innerText = "All works are checked";
+        } else if (codeError === "3") {
+
+            text.innerText = "No submit";
+        }
+    }
+
+    let subject; // Title of subject assignment belongs to
+    let name; // Title of the assignment
+    let description; // Description of the assignment
+
+    db.collection("assignments").doc(searchId).get()
+        .then(snapshot => {
+            if (snapshot.data()) {
+                // the assignment with specified ID exists
+                subject = snapshot.data().subject;
+                name = snapshot.data().name;
+                description = snapshot.data().description;
+
+                // Set page details according to assingment
+                document.title = subject + " " + name;
+                document.getElementById('subject').innerHTML = subject;
+                document.getElementById('assignment').innerHTML = name;
+                document.getElementById('description').innerHTML = description;
+                GetReviews();
+            } else {
+                // the assignment with specified ID does not exist
+                window.location.replace(window.location.origin + "/404");
+            }
+        });
+
+
+    function GetReviews(){
+        var subm = document.getElementById("submissions");
+        db.collection("assignments").doc(searchId).collection("users").get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+                // doc.data() is never undefined for query doc snapshots
+                var ref = db.collection("users").doc( "" + doc.id);
+                ref.get().then(function(docU) {
+                    if (docU.exists) {
+
+                        subm.innerHTML += "<a href='/assessmentsList?assignmentId=" + searchId + "&userId=" + doc.id + "'>Work by " + docU.data().name + "</a><br>"
+                    } else {
+                        // doc.data() will be undefined in this case
+                        console.log("No such document!");
+
+                        subm.innerHTML += "<a href='/assessmentsList?assignmentId=" + searchId + "&userId=" + doc.id + "'>Work by anonymous</a><br>"
+                    }
+                }).catch(function(error) {
+                    console.log("Error getting document:", error);
+                });
+            });
+        });
+    }
+
+</script>
+
+</html>
