@@ -203,9 +203,9 @@
             userDetails: {},
             reviewFields: [],
             fieldToAdd: null,
-            addReviewFieldName: '',
+            addReviewFieldName: null,
             addReviewFieldTypeIndex: null,
-            addReviewFieldDescription: '',
+            addReviewFieldDescription: null,
             addFieldErrors: [],
             typesArr: ['Text', 'Multiline text']
         },
@@ -229,9 +229,9 @@
                         type: app.typesArr[app.addReviewFieldTypeIndex],
                         description: app.addReviewFieldDescription
                     });
-                    app.addReviewFieldName = '';
+                    app.addReviewFieldName = null;
                     app.addReviewFieldTypeIndex = null;
-                    app.addReviewFieldDescription = '';
+                    app.addReviewFieldDescription = null;
                 }
             },
             moveFieldUp: (index) => {
@@ -246,22 +246,22 @@
                 app.reviewFields.splice(index, 1);
             },
             checkAddedField: () => {
-                if(app.addReviewFieldName != ''
-                    && app.addReviewFieldTypeIndex != null 
-                    && app.addReviewFieldDescription != '') 
+                if(app.addReviewFieldName
+                    && app.addReviewFieldTypeIndex
+                    && app.addReviewFieldDescription) 
                 {
                     return true;
                 }
 
                 app.addFieldErrors = [];
 
-                if (app.addReviewFieldName == '') {
+                if (!app.addReviewFieldName) {
                     app.addFieldErrors.push("Name of the field required");
                 }
-                if (app.addReviewFieldTypeIndex == null) {
+                if (!app.addReviewFieldTypeIndex) {
                     app.addFieldErrors.push("Type of the field required");
                 }
-                if (app.addReviewFieldDescription == '') {
+                if (!app.addReviewFieldDescription) {
                     app.addFieldErrors.push("Description of the field required");
                 }
 
