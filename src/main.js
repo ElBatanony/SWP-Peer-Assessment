@@ -45,12 +45,14 @@ let app = new Vue({
   beforeCreate() {
     firebase.initializeApp(config);
     this.db = firebase.firestore();
+    this.storage = firebase.storage();
   },
   created () {
     
   },
   mounted() {
     this.$store.state.db = this.db
+    this.$store.state.storage = this.storage
     firebase.auth().onAuthStateChanged(function (user) {
       app.$store.state.user = user;
       if (user) {

@@ -33,6 +33,18 @@ export default new Router({
         import("./views/Login.vue")
     },
     {
+      path: "/assessments/:assignmentId/:userId",
+      name: "assessments",
+      component: () =>
+        import("./views/Assessments.vue")
+    },
+    {
+      path: "/assessments/:assessmentId",
+      name: "assessmentReview",
+      component: () =>
+        import("./views/AssessmentReview.vue")
+    },
+    {
       path: "/review",
       name: "review",
       component: () =>
