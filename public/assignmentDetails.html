@@ -117,7 +117,8 @@
                         </div>
                     </div>
                 </div>
-
+                <p>Deadline: {{getDeadline()}}</p>
+                <input id="calendarDeadline" type="datetime" lang="en" data-display-mode="inline" data-close-on-select="false">
                 <div class="buttons level-right">
                     <span class="button is-medium is-danger" v-on:click="deleteAssignment">Delete Assignment</span>
                     <span class="button is-medium is-warning" onclick="goToAssignments()">Cancel</span>
@@ -193,10 +194,6 @@
                     </div>
                 </div>
             </div>
-
-
-            <p>Deadline: {{getDeadline()}}</p>
-            <input id="calendarDeadline" type="datetime" lang="en" data-display-mode="inline" data-close-on-select="false">
         </div>
     </section>
 </div> </body>
