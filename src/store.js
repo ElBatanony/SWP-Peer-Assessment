@@ -9,7 +9,6 @@ export default new Vuex.Store({
     userDetails : {},
     user: null,
     notifications : [],
-    accounts : [],
     assignments: [],
     accounts: [],
     courses: [],

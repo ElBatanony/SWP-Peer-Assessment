@@ -10,6 +10,22 @@
     <br>
     <v-btn @click="deleteAssignment" class="error">Delete Assignment</v-btn>
     <v-btn @click="updateAssignment" class="success">Save Changes</v-btn>   
+    <hr>
+    <div v-for="(field, index) in assignment.reviewFields" v-bind:key="index" >
+      <h1 class="heading">Review</h1>
+      <v-text-field label="Field name" v-model="field.name" readonly></v-text-field>
+      <v-text-field label="Field type" v-model="field.type" readonly></v-text-field>
+      <v-textarea label="Field description" v-model="field.description" readonly></v-textarea>
+      <v-btn @click="deleteReviewField(index)" class="error">Delete field</v-btn>
+      <v-btn @click="moveFieldUp(index)" v-if="index > 0" class="success">Move up</v-btn>
+    </div>
+    <hr>
+    <div>
+      <v-text-field label="Field name" v-model="addReviewFieldName" placeholder="Enter the name of the field"></v-text-field>
+      <v-select :items="typesArr" label="Type" v-model="addReviewFieldTypeIndex"></v-select>
+      <v-textarea label="Field description" v-model="addReviewFieldDescription" placeholder="Enter the description of the field"></v-textarea>
+      <v-btn @click="addField" class="success">Add field</v-btn>
+    </div>
   </div>    
 </template>
 
@@ -17,11 +33,17 @@
 import firebase from "firebase";
 import { mapState, mapGetters, mapActions } from "vuex";
 
+var app;
+
 export default {
   data: function() {
     return {
       deadlineDate : null,
-      deadlineTime : null
+      deadlineTime : null,
+      addReviewFieldName: null,
+      addReviewFieldTypeIndex: null,
+      addReviewFieldDescription: null,
+      typesArr: ['Text', 'Multiline text']
     };
   },
   methods: {
@@ -55,7 +77,7 @@ export default {
       deadline.setMinutes(this.deadlineTime.split(':')[1])
 
       let router = this.$router
-
+      console.log(this.assignment.reviewFields);
       return this.db
         .collection("assignments")
         .doc(this.assignment.id)
@@ -64,6 +86,7 @@ export default {
           description: this.assignment.description,
           course: this.assignment.course,
           subject: this.assignment.subject,
+          reviewFields: this.assignment.reviewFields,
           deadline: deadline.getTime()
         })
         .then( function() {
@@ -77,7 +100,53 @@ export default {
       var date = new Date();
       date.setTime(this.deadline);
       return date.toString();
-    }
+    },
+    deleteReviewField: (index) => {
+      app.assignment.reviewFields.splice(index, 1);
+    },            
+    moveFieldUp: (index) => {
+      if (index > 0) {
+        let tempReviewFields = [...app.assignment.reviewFields];
+        tempReviewFields[index] = app.assignment.reviewFields[index-1];
+        tempReviewFields[index-1] = app.assignment.reviewFields[index];
+        app.assignment.reviewFields = [...tempReviewFields];
+      }
+    },
+    addField: () => {
+      if (app.checkAddedField()) {
+        app.assignment.reviewFields.push({
+            name: app.addReviewFieldName, 
+            type: app.addReviewFieldTypeIndex,
+            description: app.addReviewFieldDescription
+        });
+        app.addReviewFieldName = null;
+        app.addReviewFieldTypeIndex = null;
+        app.addReviewFieldDescription = null;
+      }
+    },  
+    checkAddedField: () => {
+      if(app.addReviewFieldName
+          && app.addReviewFieldTypeIndex
+          && app.addReviewFieldDescription) 
+      {
+        return true;
+      }
+
+      app.addFieldErrors = [];
+
+      if (!app.addReviewFieldName) {
+          app.addFieldErrors.push("Name of the field required");
+      }
+      if (!app.addReviewFieldTypeIndex) {
+          app.addFieldErrors.push("Type of the field required");
+      }
+      if (!app.addReviewFieldDescription) {
+          app.addFieldErrors.push("Description of the field required");
+      }
+
+      return false;
+    },
+    
   },
   computed: {
     ...mapState(['assignments','db','courses']),
@@ -98,6 +167,7 @@ export default {
     }
   },
   created() {
+    app = this;
     if (!this.assignment) this.assignment = {}
     this.id = this.$route.params.id;
     this.assignment = this.assignments.filter( x => x.id == this.id )[0];
