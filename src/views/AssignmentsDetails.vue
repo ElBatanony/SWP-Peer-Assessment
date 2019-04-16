@@ -11,8 +11,8 @@
     <v-btn @click="deleteAssignment" class="error">Delete Assignment</v-btn>
     <v-btn @click="updateAssignment" class="success">Save Changes</v-btn>   
     <hr>
+    <h1 class="heading">Review</h1>
     <div v-for="(field, index) in assignment.reviewFields" v-bind:key="index" >
-      <h1 class="heading">Review</h1>
       <v-text-field label="Field name" v-model="field.name" readonly></v-text-field>
       <v-text-field label="Field type" v-model="field.type" readonly></v-text-field>
       <v-textarea label="Field description" v-model="field.description" readonly></v-textarea>
