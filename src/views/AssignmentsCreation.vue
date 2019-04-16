@@ -1,84 +1,13 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Add assignment - Peer Assessment SWP</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
-    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
-    <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
-
-    <link href="/bulma-calendar/bulma-calendar.css" rel="stylesheet">
-    <script src="/bulma-calendar/bulma-calendar.js"></script>
-
-    <script>
-        // Initialize Firebase
-        var config = {
-            apiKey: "AIzaSyBoFhrw9RehDmHHFgOV4aFi3TrBfT_PY48",
-            authDomain: "swp-peer-assessment.firebaseapp.com",
-            databaseURL: "https://swp-peer-assessment.firebaseio.com",
-            projectId: "swp-peer-assessment",
-            storageBucket: "swp-peer-assessment.appspot.com",
-            messagingSenderId: "998218435509"
-        };
-        firebase.initializeApp(config);
-
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="utils.js"></script>
-
-    <link rel="icon" href="peer-review-icon.png">
-</head>
-
-<body> <div id="app">
-
-    <nav class="navbar is-success" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-            <a class="navbar-item" href="/">
-                <h1 class="is-size-4"> Peer Assessment </h1>
-            </a>
-    
-            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-            </a>
-        </div>
-    
-        <div class="navbar-menu">
-            <div class="navbar-start">
-                <a class="navbar-item" href="/"> Home</a>
-                <a class="navbar-item" href="/assignments"> Assignments </a>
-            </div>
-    
-            <div class="navbar-end">
-                <div class="navbar-item" v-if="user">
-                    <a class="button is-success is-inverted" onclick="signOut()">Sign out</a>
-                </div>
-    
-                <div class="navbar-item" v-if="!user">
-                    <a class="button is-success is-inverted" href="/login">Sign in</a>
-                </div>
-    
-            </div>
-        </div>
-    </nav>
-
-    <section class="section">
-        <div class="container">
-            
+<template>
+  <div>
+      
             <h1 class="subtitle is-2">Create a new assignment</h1>
 
             <div class="box">
                 <p v-if="errors.length">
                     <b>Please correct the following error(s):</b>
                     <ul>
-                      <li v-for="error in errors">{{ error }}</li>
+                      <li v-for="error in errors" v-bind:key="error">{{ error }}</li>
                     </ul>
                 </p>
 
@@ -103,7 +32,7 @@
                         <div class="select">
                             <select v-model="courseIndex" id="course-select">
                                 <option disabled value="" >Choose a course</option>
-                                <option v-for="(course, index) in coursesArr" :value="index" >{{course.name}}</option>
+                                <option v-for="(course, index) in coursesArr" :value="index" v-bind:key="index">{{course.name}}</option>
                             </select>
                         </div>
                     </div>
@@ -115,7 +44,7 @@
                         <div class="select">
                             <select v-model="subjectIndex" id="subject-select">
                                 <option disabled value="">Choose a subject</option>
-                                <option v-for="(subject, index) in subjects" :value="index" >{{subject}}</option> 
+                                <option v-for="(subject, index) in subjects" :value="index" v-bind:key="index">{{subject}}</option> 
                             </select>
                         </div>
                     </div>
@@ -130,17 +59,17 @@
             <input type="datetime" lang="en" data-display-mode="inline" data-close-on-select="false">
 
             </div>  
-            
-        </div>
-    </section>
-</div> </body>
+  </div>    
+</template>
 
 <script>
+import firebase from "firebase";
+let db = firebase.firestore();
 
-    var app = new Vue({
-            el: '#app',
-            data: {
-                errors: [],
+export default {
+  data: function() {
+    return {
+      errors: [],
                 coursesArr: [],
                 name: null,
                 description: null,
@@ -148,10 +77,10 @@
                 subjectIndex: null,
                 user: null,
                 deadline: (new Date()).getTime()
-            }
-            ,
-        methods: {
-            getDeadline: function()
+    };
+  },
+  methods: {
+    getDeadline: function()
             {
                 var date = new Date();
                 date.setTime(this.deadline);
@@ -199,8 +128,8 @@
 
                 e.preventDefault();
             }
-        },
-        computed: {
+  },
+  computed: {
             subjects: function () {
                     if(this.courseIndex === null)
                     {
@@ -212,9 +141,9 @@
                         return this.coursesArr[this.courseIndex].subjects;
                     }
                 }
-            }
-        })
-
+            },
+  created() {
+    
     firebase.auth().onAuthStateChanged(function (user) {
         app.user = user;
         if (user) {
@@ -261,9 +190,6 @@
             console.log(datepicker.data.value());
         });
     }
-
+  }
+};
 </script>
-
-</html>
-
-

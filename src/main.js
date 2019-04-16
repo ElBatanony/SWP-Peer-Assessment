@@ -1,0 +1,67 @@
+import Vue from "vue";
+import './plugins/vuetify'
+import firebase from 'firebase';
+import firebaseui from 'firebaseui';
+import App from "./App.vue";
+import router from "./router";
+import store from "./store";
+
+import Navbar from '@/components/Navbar.vue';
+
+import Vuetify from 'vuetify'
+import 'roboto-fontface/css/roboto/roboto-fontface.css'
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
+
+import { mapState } from 'vuex'
+
+
+Vue.config.productionTip = false;
+
+Vue.use(Vuetify)
+
+let config = {
+  apiKey: "AIzaSyBoFhrw9RehDmHHFgOV4aFi3TrBfT_PY48",
+  authDomain: "swp-peer-assessment.firebaseapp.com",
+  databaseURL: "https://swp-peer-assessment.firebaseio.com",
+  projectId: "swp-peer-assessment",
+  storageBucket: "swp-peer-assessment.appspot.com",
+  messagingSenderId: "998218435509"
+};
+
+Vue.component('Navbar', Navbar);
+
+let app = new Vue({
+  router,
+  store,
+  render: h => h(App),
+  computed: {
+    isAdmin() {
+      return app.$store.state.userDetails.role == 'admin'
+    },
+    ...mapState([
+    'user','db'
+    ])
+  },
+  beforeCreate() {
+    firebase.initializeApp(config);
+    this.db = firebase.firestore();
+  },
+  created () {
+    
+  },
+  mounted() {
+    this.$store.state.db = this.db
+    firebase.auth().onAuthStateChanged(function (user) {
+      app.$store.state.user = user;
+      if (user) {
+        store.dispatch('bindUserDetails', user ).then(function () {
+          let course = app.$store.state.userDetails.course;
+          if (app.$store.state.userDetails.role == 'admin') course = null;
+          store.dispatch('bindAssignments', course)
+        })
+      }
+      store.dispatch('bindAccounts')
+      store.dispatch('bindCourses')
+    });
+  }
+}).$mount("#app");

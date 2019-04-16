@@ -1,135 +1,17 @@
 <!DOCTYPE html>
-<html>
-
-<head>
+<html lang="en">
+  <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Peer Assessment SWP</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
-    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/5.9.0/firebase.js"></script>
-    <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
-    <script>
-        // Initialize Firebase
-        var config = {
-            apiKey: "AIzaSyBoFhrw9RehDmHHFgOV4aFi3TrBfT_PY48",
-            authDomain: "swp-peer-assessment.firebaseapp.com",
-            databaseURL: "https://swp-peer-assessment.firebaseio.com",
-            projectId: "swp-peer-assessment",
-            storageBucket: "swp-peer-assessment.appspot.com",
-            messagingSenderId: "998218435509"
-        };
-        firebase.initializeApp(config);
-
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="utils.js"></script>
-
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="peer-review-icon.png">
-
-</head>
-
-<body> <div id="app">
-
-    <nav class="navbar is-success" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-            <a class="navbar-item" href="/">
-                <h1 class="is-size-4"> Peer Assessment </h1>
-            </a>
-    
-            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-            </a>
-        </div>
-    
-        <div class="navbar-menu">
-            <div class="navbar-start">
-                <a class="navbar-item" href="/"> Home</a>
-                <a class="navbar-item" href="/assignments"> Assignments </a>
-                <a class="navbar-item" v-if="userDetails.role == 'admin'" href="/accounts">Users</a>
-            </div>
-    
-            <div class="navbar-end">
-                    <a class="navbar-item" href="/" v-if="user"> Hello, {{user.displayName}}!</a>
-                    
-                    <div class="navbar-item" v-if="user">
-                        <a class="button is-success is-inverted" onclick="signOut()">Sign out</a>
-                    </div>
-
-                    <div class="navbar-item" v-if="!user">
-                        <a class="button is-success is-inverted" href="/login">Sign in</a>
-                    </div>
-
-            </div>
-        </div>
-    </nav>
-
-    <section class="section">
-        <div class="container">
-            <p class="subtitle is-2 has-text-centered">Welcome to the Peer Assessment software project!</p>
-            <br>
-            <h1 class="subtitle is-4" v-if="notifications.length > 0">Notifications</h1>
-            <ul>
-                <li v-for="not in notifications" style="margin-bottom:3px">
-                    <div class="notification is-warning">
-                        <button class="delete" v-on:click="deleteNotification(not)"></button>
-                         {{not}}
-                    </div>
-                </li>
-            <ul>
-        </div>
-    </section>
-
-</div> </body>
-
-<script>
-
-  var app = new Vue({
-    el: '#app',
-    data: {
-      user: null,
-      userDetails: {},
-      notifications: []
-    },
-    methods: {
-        deleteNotification(x) {
-            app.notifications = app.notifications.filter( not => not != x);
-
-            return firebase.firestore().collection("users").doc(app.user.uid).update({
-                notifications: firebase.firestore.FieldValue.arrayRemove(x)
-            });
-        }
-    }
-  })
-
-  firebase.auth().onAuthStateChanged(function (user) {
-      app.user = user;
-
-      if (user) {
-          
-          firebase.firestore().collection("users").doc(user.uid).get().then(function (doc) {
-              if (doc.exists) {
-                  app.notifications = doc.data().notifications;
-                  app.userDetails = doc.data();;
-              } else {
-                  console.log("No such document!");
-              }
-          }).catch(function (error) {
-              console.log("Error getting document:", error);
-          });
-      } else {
-            // User is signed out.
-            window.location.href = "login";
-        }
-  });
-
-</script>
-
+    <title>Peer Assessment Project</title>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but swp-peer-assessment doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
 </html>
-
-
