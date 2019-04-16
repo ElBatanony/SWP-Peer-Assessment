@@ -19,9 +19,6 @@
             <v-select :items="getGroups" label="Group" v-model="user.group"></v-select>
         </div>
 
-                <a class="button is-medium is-danger" v-on:click="deleteUser()">Delete User</a>
-                <a class="button is-medium is-success" v-on:click="checkForm()">Save changes</a>
-
     <v-btn @click="deleteUser" class="error">Delete User</v-btn>
     <v-btn @click="updateUser" class="success">Save Changes</v-btn>   
 
