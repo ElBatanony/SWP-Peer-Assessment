@@ -39,13 +39,14 @@ let app = new Vue({
       return app.$store.state.userDetails.role == 'admin'
     },
     ...mapState([
-    'user','db'
+    'user','db','auth','storage'
     ])
   },
   beforeCreate() {
     firebase.initializeApp(config);
     this.db = firebase.firestore();
     this.storage = firebase.storage();
+    this.auth = firebase.auth();
   },
   created () {
     
@@ -53,6 +54,7 @@ let app = new Vue({
   mounted() {
     this.$store.state.db = this.db
     this.$store.state.storage = this.storage
+    this.$store.state.auth = this.auth
     firebase.auth().onAuthStateChanged(function (user) {
       app.$store.state.user = user;
       if (user) {

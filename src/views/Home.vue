@@ -4,7 +4,7 @@
 
     <p class="headline text-xs-center" v-if="user != null">Greetings, {{user.displayName}}!</p>
     
-    <div v-if="userDetails">
+    <div v-if="userDetials && userDetails.notifications.length > 0">
       <v-layout align-center justify-space-between row fill-height>
         <p class="headline" >Notifications</p>
         <v-btn color="info" @click="clearNotifications">Clear Notifications</v-btn>
@@ -25,6 +25,8 @@ export default {
   computed: mapState([
     'user','userDetails'
   ]),
+  created() {
+  },
   methods: {
     clearNotifications(x) {
       return this.$store.dispatch('clearNotifications', this.userDetails.uid )

@@ -1,40 +1,43 @@
 <template>
   <div>
-    <h1 class="title is-2" id="assignment">Loading...</h1>
-            <h2 class="subtitle is-4" id="subject">Loading...</h2>
-            <p class="box subtitle" id="description">Loading...</p>
-            <p class="box subtitle">Deadline: {{getDeadline()}}</p>
-            <div class="container center is-medium">
-                <div class="file has-name">
-                    <label class="file-label">
-                        <input class="file-input" type="file" id="solution">
-                        <span class="file-cta">
-                            <span class="file-icon">
-                                <i class="fas fa-upload"></i>
-                            </span>
-                            <span class="file-label" id="filename">
-                                Choose a file…
-                            </span>
-                        </span>
-                        <input class="button is-outlined" type="submit" id="uploadButton" onclick="uploadFile()" value="Submit">
-                    </label>
-                </div>
-          </div>
+    <h1 class="title" :value="assignment.name">Loading...</h1>
+    <h2 class="subtitle" :value="assignment.subject">Loading...</h2>
+    <p class="subtitle" :value="assignment.description">Loading...</p>
+    <div class="container center is-medium">
+        <div class="file has-name">
+            <label class="file-label">
+                <input class="file-input" type="file" id="solution">
+                <span class="file-cta">
+                    <span class="file-icon">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                    <span class="file-label" id="filename">
+                        Choose a file…
+                    </span>
+                </span>
+                <input class="button is-outlined" type="submit" id="uploadButton" onclick="uploadFile()"
+                        value="Submit">
+            </label>
+        </div>
+    </div>
 
             <div class="field" v-if="assignment !== null">
                 <label class="label">Uploaded</label>
                 <div class="control">
-                <input v-model="assignment" id="uploadedAssignment" class="input is-static" type="text" readonly>
+                    <input v-model="assignment" id="uploadedAssignment" class="input is-static" type="text" readonly>
                 </div>
             </div>
-        <br>
+            <br>
             <a class="button is-warning" v-if="isAssignmentEnded" v-bind:href="linkz">Review</a>
+            <br>
+            <p id="errMessage"></p>
   </div>
 </template>
 
 <script>
 
   import firebase from 'firebase';
+  import { mapState, mapGetters } from "vuex";
     var url_string = window.location.href
     var url = new URL(url_string);
     var searchId = url.searchParams.get("id");
@@ -43,7 +46,7 @@
     let name; // Title of the assignment
     let description; // Description of the assignment
   
-
+var app;
 
 export default {
   data : function () {
@@ -67,49 +70,38 @@ export default {
             }
   },
   created () {
-    db.collection("users").get().then(querySnapshot => {
-      querySnapshot.forEach(doc => {
-          // doc.data() is never undefined for query doc snapshots
-          this.$store.state.accounts.push(doc.data());
-          this.$store.state.accounts[this.$store.state.accounts.length-1].id = doc.id;
-      });
-  });
+      app = this;
+  },
+  computed: {
+    ...mapGetters(['isAdmin']),
+    ...mapState([
+    'user','userDetails','assignments','db'
+    ])
   },
   mounted: () => {
-            let userId; // Id of user entered the page
 
-            // Automatic signing-in into the system
-            firebase.auth().onAuthStateChanged(function (user) {
-                app.user = user;
-                if (user) {
-                    userId = user.uid; 
-                    app.userId = userId;
-                } else {
-                    window.location.href = "login";
-                }
-            });
+            let searchId = this.$route.params.assignmentId;
 
-        
-            let db = firebase.firestore();
-            let url_string = window.location.href
-            let url = new URL(url_string);
-            let searchId = url.searchParams.get("id");
+            if (!this.assignment) this.assignment = {}
+            this.assignment = this.assignments.filter( x => x.id == searchId )[0];
+            if (!this.assignment) {
+                console.log("No such assignment!");
+                this.$router.push("/assignments");
+                return;
+            }
 
-            firebase.firestore().collection("assignments").doc(searchId).collection("users").get() 
-            .then(snapshot => {
-                snapshot.docs.forEach(doc => {
-                    if (doc.id === userId) {
-                        let path = doc.data().reference;
-                        let parsedPath = path.split('/');
-                        app.assignment = parsedPath[parsedPath.length - 1];
-                    }
+            this.db.collection("assignments").doc(searchId).collection("users").get()
+                .then(snapshot => {
+                    snapshot.docs.forEach(doc => {
+                        if (doc.id === app.user.uid) {
+                            let path = doc.data().reference;
+                            let parsedPath = path.split('/');
+                            app.assignment = parsedPath[parsedPath.length - 1];
+                        }
+                    });
                 });
-            });
-        }
-}
-    
-
-    db.collection("assignments").doc(searchId).get()
+        
+        this.db.collection("assignments").doc(searchId).get()
         .then(snapshot => {
             if (snapshot.data()) {
                 // the assignment with specified ID exists
@@ -126,18 +118,22 @@ export default {
                 app.deadline = snapshot.data().deadline;
                 app.isAssignmentEnded = (app.deadline <= new Date().getTime());
             }
-            else {
-                // the assignment with specified ID does not exist
-                window.location.replace(window.location.origin + "/404");
-            }
-        });    
 
-    let file = document.getElementById("solution");
-    file.onchange = function() {
-        if (file.files.length > 0) {
-            document.getElementById("filename").innerHTML = file.files[0].name;
+        });
+
+        let file = document.getElementById("solution");
+        file.onchange = function() {
+            if (file.files.length > 0) {
+                document.getElementById("filename").innerHTML = file.files[0].name;
+            }
         }
     }
+}
+    
+
+       
+
+    
     
 
     // uploading the files into the firebase database
@@ -155,8 +151,7 @@ export default {
                 }
             };
 
-            var db = firebase.firestore();
-            var docRef = db.collection("assignments").doc(searchId).collection("users").doc(app.userId)
+            this.db.collection("assignments").doc(searchId).collection("users").doc(app.userId)
             docRef.get().then(function(doc) {
                 if (doc.exists) {
                     var storage = firebase.storage();

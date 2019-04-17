@@ -1,18 +1,20 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import { vuexfireMutations, firestoreAction  } from 'vuexfire'
+import { vuexfireMutations, firestoreAction } from 'vuexfire'
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    userDetails : {},
+    userDetails: {},
     user: null,
-    notifications : [],
+    notifications: [],
+    accounts: [],
     assignments: [],
     accounts: [],
     courses: [],
-    db : null
+    db: null,
+    auth: null
   },
   getters: {
     isAdmin: state => {
@@ -23,18 +25,18 @@ export default new Vuex.Store({
     ...vuexfireMutations,
   },
   actions: {
-    bindUserDetails: firestoreAction( ({ bindFirestoreRef }, user ) => {
-      return bindFirestoreRef('userDetails', state.db.collection('users').doc(user.uid) )
+    bindUserDetails: firestoreAction(({ bindFirestoreRef }, user) => {
+      return bindFirestoreRef('userDetails', state.db.collection('users').doc(user.uid))
     }),
-    bindAssignments: firestoreAction(({bindFirestoreRef, state }, course) => {
+    bindAssignments: firestoreAction(({ bindFirestoreRef, state }, course) => {
       if (course == null)
-        return bindFirestoreRef('assignments', state.db.collection('assignments') )
-      return bindFirestoreRef('assignments', state.db.collection('assignments').where("course", "==", course) )  
+        return bindFirestoreRef('assignments', state.db.collection('assignments'))
+      return bindFirestoreRef('assignments', state.db.collection('assignments').where("course", "==", course))
     }),
     bindUserDetails: firestoreAction(({ bindFirestoreRef, state }, user) => {
       return bindFirestoreRef('userDetails', state.db.collection('users').doc(user.uid))
     }),
-    bindAccounts: firestoreAction(({ bindFirestoreRef, state } ) => {
+    bindAccounts: firestoreAction(({ bindFirestoreRef, state }) => {
       return bindFirestoreRef('accounts', state.db.collection('users'))
     }),
     bindCourses: firestoreAction(({ bindFirestoreRef, state }) => {

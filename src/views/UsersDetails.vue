@@ -105,7 +105,7 @@ export default {
   mounted() {
     this.id = this.$route.params.id;
 
-    router = this.$router
+    let router = this.$router
 
     this.db
       .collection("users")

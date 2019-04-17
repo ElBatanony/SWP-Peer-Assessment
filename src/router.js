@@ -33,6 +33,18 @@ export default new Router({
         import("./views/Login.vue")
     },
     {
+      path: "/submissions/:assignmentId/:errorCode",
+      name: "submissions",
+      component: () =>
+        import("./views/Submissions.vue")
+    },
+    {
+      path: "/submissions/:assignmentId",
+      name: "submissions",
+      component: () =>
+        import("./views/Submissions.vue")
+    },
+    {
       path: "/assessments/:assignmentId/:userId",
       name: "assessments",
       component: () =>
@@ -63,7 +75,7 @@ export default new Router({
         import("./views/AssignmentsCreation.vue")
     },
     {
-      path: "/assignments/:id",
+      path: "/assignments/:assignmentId",
       name: "view assignment",
       component: () =>
         import("./views/Solutions.vue")

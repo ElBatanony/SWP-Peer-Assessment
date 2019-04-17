@@ -8,8 +8,9 @@
         <v-chip color="green lighten-1">{{assignment.course}}</v-chip>
         <v-chip color="green lighten-1">{{assignment.subject}}</v-chip>
 
+        <v-btn small :to="'/submissions/'+assignment.id" v-if="isAdmin" class="warning">View Submissions</v-btn>
         <v-btn small :to="'/assignments/edit/'+assignment.id" v-if="userDetails.role == 'admin'" class="warning">Edit Assignment</v-btn>
-        <v-btn :to="'/assignments/'+assignment.id" v-if="userDetails.role == '!admin'" class="warning">View Assignment</v-btn>
+        <v-btn small :to="'/assignments/'+assignment.id" v-if="userDetails.role != 'admin'" class="warning">View Assignment</v-btn>
     </div>
 
     <v-btn to="/assignments/new" v-if="userDetails.role == 'admin'" class="info">Add Assignment</v-btn>
