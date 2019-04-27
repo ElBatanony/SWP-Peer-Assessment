@@ -1,19 +1,21 @@
 <template>
     <div>
         <div v-if="assignment">
-            <h1 class="heading" :value="assignment.name">Loading...</h1>
-            <h2 class="subheading" :value="assignment.subject">Loading...</h2>
-            <p class="subtitle" :value="assignment.description">Loading...</p>
-        </div>
+            <h1 class="heading" >{{assignment.name}}</h1>
+            <h2 class="subheading" >{{assignment.subject}}</h2>
+            <p class="subtitle" >{{assignment.description}}</p>
 
-        <h3 class="subtitle">List of submissions</h3>
-        <div v-for="submission in submissions" v-if="(submission.assignmentId)"
-             v-bind:key="submission.id">
-            <span class="title">Work by {{ submission.username }} </span>
 
-            <v-btn small :to="'/assessments/'+ submission.assignmentId +'/' + submissions.userId" class="warning">View
-                Assessments
-            </v-btn>
+            <h3 class="subtitle">List of submissions</h3>
+
+            <div v-for="submission in submissions" v-if="(submission.assignmentId === assignment.id)"
+                 v-bind:key="submission.id">
+                <span class="title">Work by {{ submission.assignmentId}} </span>
+
+                <v-btn small :to="'/assessments/'+ submission.assignmentId +'/' + submissions.userId" class="warning">View
+                    Assessments
+                </v-btn>
+            </div>
         </div>
     </div>
 </template>
@@ -43,6 +45,7 @@
                 console.log('no assignment')
                 return
             }
+            console.log(this.submissions)
 
             //this.GetReviews();
         }/*,
