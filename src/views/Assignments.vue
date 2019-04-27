@@ -1,7 +1,7 @@
 <template>
   <div>
       
-    <h1 class="headline">Your Assignments</h1>
+    <h1 class="headline">Assignments</h1>
     
     <div v-for="assignment in assignments" v-if="(assignment.course == userDetails.course || isAdmin)" v-bind:key="assignment.name">
         <span class="title">{{assignment.name}} </span>
@@ -13,12 +13,15 @@
         <v-btn small :to="'/assignments/'+assignment.id" v-if="userDetails.role != 'admin'" class="warning">View Assignment</v-btn>
     </div>
 
-    <v-btn to="/assignments/new" v-if="userDetails.role == 'admin'" class="info">Add Assignment</v-btn>
+    <v-btn v-if="userDetails.role == 'admin'" class="info" v-on:click="createNewAssignment">Add Assignment</v-btn>
   </div>    
 </template>
 
 <script>
+import firebase from 'firebase';
 import { mapState, mapGetters } from "vuex";
+
+let db = firebase.firestore();
 
 export default {
   computed: {
@@ -26,6 +29,21 @@ export default {
     ...mapState([
     'user','userDetails','assignments'
     ])
+  },
+  methods: {
+    createNewAssignment() {
+      console.log('hi')
+      db.collection("assignments").add({
+          name: 'New Assignment ' + new Date().getMilliseconds(),
+          description: 'New Assignment Description',
+      })
+      .then(function(docRef) {
+          console.log("Document written with ID: ", docRef.id);
+      })
+      .catch(function(error) {
+          console.error("Error adding document: ", error);
+      });
+    }
   }
 };
 </script>
