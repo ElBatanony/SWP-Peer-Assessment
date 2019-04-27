@@ -1,65 +1,51 @@
 <template>
-  <div>
-    <div v-if="assignment">
-        <h1 class="heading" :value="assignment.name">Loading...</h1>
-        <h2 class="subheading" value="assignment.subject">Loading...</h2>
-        <p class="subtitle" value="assignment.description">Loading...</p>
+    <div>
+        <div v-if="assignment">
+            <h1 class="heading" :value="assignment.name">Loading...</h1>
+            <h2 class="subheading" :value="assignment.subject">Loading...</h2>
+            <p class="subtitle" :value="assignment.description">Loading...</p>
+        </div>
+
+        <h3 class="subtitle">List of submissions</h3>
+        <div v-for="submission in submissions" v-if="(submission.assignmentId)"
+             v-bind:key="submission.id">
+            <span class="title">Work by {{ submission.username }} </span>
+
+            <v-btn small :to="'/assessments/'+ submission.assignmentId +'/' + submissions.userId" class="warning">View
+                Assessments
+            </v-btn>
+        </div>
     </div>
-    
-    <h3 class="subtitle">List of submissions</h3>
-    <div id="submissions"></div>
-  </div>    
 </template>
 
 <script>
-import { mapState, mapGetters } from "vuex";
+    import {mapState, mapGetters} from "vuex";
 
-var app;
+    var app;
 
-export default {
-    data: function () {
-        return {
-            submissions: []
-        }
-    },
-  computed: {
-    ...mapGetters(['isAdmin']),
-    ...mapState([
-    'user','userDetails','assignments','db'
-    ])
-  },
-  created() {
-      this.assignment = null
-  },
-  mounted() {
-    app = this;
-    this.assignmentId = this.$route.params.assignmentId;
-    this.assignment = this.assignments.filter( x => x.id == this.assignmentId )[0];
+    export default {
 
-    console.log( this.$route.params.assignmentId, this.assignment )
+        computed: {
+            ...mapGetters(['isAdmin']),
+            ...mapState([
+                'user', 'userDetails', 'assignments', 'db', 'submissions'
+            ])
+        },
+        created() {
+            this.assignment = null
 
-    if (!this.assignment) {
-        console.log('no assignment')
-        return
-    }
+        },
+        mounted() {
+            app = this;
+            this.assignmentId = this.$route.params.assignmentId;
+            this.assignment = this.assignments.filter(x => x.id === this.assignmentId)[0];
+            if (!this.assignment) {
+                console.log('no assignment')
+                return
+            }
 
-    var codeError = this.$route.params.errorCode;
-
-    if (codeError) {
-        text = document.getElementById("errMessage");
-        if (codeError === "1") {
-            text.innerText = "Assignment don't finished yet";
-        } else if (codeError === "2") {
-            app.linkz = "";
-            text.innerText = "All works are checked";
-        } else if (codeError === "3") {
-
-            text.innerText = "No submit";
-        }
-    }    
-
-    this.GetReviews();
-  },
+            //this.GetReviews();
+        }/*,
   methods: {
       GetReviews(){
         var subm = document.getElementById("submissions");
@@ -82,15 +68,15 @@ export default {
             });
         });
       }
-  }
-};
+  }*/
+    };
 
-/*
-    getDeadline: function () {
-        var date = new Date();
-        date.setTime(this.deadline);
-        parsedDate = date.toString().split(' ');
-        return parsedDate[0] + ' ' + parsedDate[1] + ' ' + parsedDate[2] + ' ' + parsedDate[3] + ' ' + parsedDate[4];
-    }
-*/
+    /*
+        getDeadline: function () {
+            var date = new Date();
+            date.setTime(this.deadline);
+            parsedDate = date.toString().split(' ');
+            return parsedDate[0] + ' ' + parsedDate[1] + ' ' + parsedDate[2] + ' ' + parsedDate[3] + ' ' + parsedDate[4];
+        }
+    */
 </script>

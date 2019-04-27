@@ -63,6 +63,7 @@ let app = new Vue({
           //console.log(app.$store.state.userDetails)
           if (app.$store.state.userDetails.role == 'admin') course = null;
           store.dispatch('bindAssignments', course)
+          store.dispatch('bindSubmissions')
         })
       }
       if (app.$store.state.userDetails.role == 'admin') {
