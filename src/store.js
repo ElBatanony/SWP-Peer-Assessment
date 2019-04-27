@@ -25,9 +25,6 @@ export default new Vuex.Store({
     ...vuexfireMutations,
   },
   actions: {
-    bindUserDetails: firestoreAction(({ bindFirestoreRef }, user) => {
-      return bindFirestoreRef('userDetails', state.db.collection('users').doc(user.uid))
-    }),
     bindAssignments: firestoreAction(({ bindFirestoreRef, state }, course) => {
       if (course == null)
         return bindFirestoreRef('assignments', state.db.collection('assignments'))
