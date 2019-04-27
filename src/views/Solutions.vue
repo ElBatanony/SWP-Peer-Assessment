@@ -64,6 +64,7 @@ export default {
             console.log("File available at", downloadURL);
             db.collection('submissions').doc( app.assignment.id + '-' + app.user.uid ).set({
                 assignmentId: app.assignment.id,
+                username: app.user.displayName,
                 userId: app.user.uid,
                 downloadURL
             }).then(function() {
