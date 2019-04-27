@@ -65,6 +65,7 @@ export default {
             db.collection('submissions').doc( app.assignment.id + '-' + app.user.uid ).set({
                 assignmentId: app.assignment.id,
                 username: app.user.displayName,
+                fileName: app.selectedFile.name,
                 userId: app.user.uid,
                 downloadURL
             }).then(function() {
