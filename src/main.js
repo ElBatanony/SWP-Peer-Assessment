@@ -60,6 +60,11 @@ let app = new Vue({
       if (user) {
         store.dispatch('bindUserDetails', user ).then(function () {
           let course = app.$store.state.userDetails.course;
+
+          if (app.$store.state.userDetails.role == 'admin') {
+            store.dispatch('bindAccounts')
+            store.dispatch('bindCourses')
+          }
           //console.log(app.$store.state.userDetails)
           if (app.$store.state.userDetails.role == 'admin') course = null;
           store.dispatch('bindAssignments', course).then( function() {
@@ -90,10 +95,7 @@ let app = new Vue({
           )
         })
       }
-      if (app.$store.state.userDetails.role == 'admin') {
-        store.dispatch('bindAccounts')
-        store.dispatch('bindCourses')
-      }
+      
     });
 
   }
