@@ -9,7 +9,7 @@
       <v-toolbar-items>
         <v-btn flat to="/">Home</v-btn>
         <v-btn flat to="/assignments" v-if="user">Assignments</v-btn>
-        <v-btn flat to="/users" v-if="userDetails.role == 'admin'">Users</v-btn>
+        <v-btn flat to="/users" v-if="userDetails &&userDetails.role == 'admin'">Users</v-btn>
       </v-toolbar-items>
 
       <v-spacer></v-spacer>

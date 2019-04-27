@@ -69,12 +69,6 @@ export default new Router({
         import("./views/AssignmentsDetails.vue")
     },
     {
-      path: "/assignments/new",
-      name: "assignmentCreation",
-      component: () =>
-        import("./views/AssignmentsCreation.vue")
-    },
-    {
       path: "/assignments/:assignmentId",
       name: "view assignment",
       component: () =>

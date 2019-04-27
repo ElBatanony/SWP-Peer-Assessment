@@ -39,7 +39,7 @@ let app = new Vue({
       return app.$store.state.userDetails.role == 'admin'
     },
     ...mapState([
-    'user','db','auth','storage'
+    'user','db','auth','storage','assignments'
     ])
   },
   beforeCreate() {
@@ -60,12 +60,41 @@ let app = new Vue({
       if (user) {
         store.dispatch('bindUserDetails', user ).then(function () {
           let course = app.$store.state.userDetails.course;
+          //console.log(app.$store.state.userDetails)
           if (app.$store.state.userDetails.role == 'admin') course = null;
-          store.dispatch('bindAssignments', course)
+          store.dispatch('bindAssignments', course).then( function() {
+              app.db.collection('submissions').where("userId", "==", app.user.uid).get()
+              .then(function(querySnapshot) {
+                  querySnapshot.forEach(function(doc) {
+                      // doc.data() is never undefined for query doc snapshots
+                      //console.log(doc.id, " => ", doc.data());
+                      app.assignments.filter(x => x.id == doc.data().assignmentId)[0].submitted = true;
+                  });
+              })
+              .catch(function(error) {
+                  console.log("Error getting documents: ", error);
+              });
+
+              app.db.collection('assessments').where("userId", "==", app.user.uid).get()
+              .then(function(querySnapshot) {
+                  querySnapshot.forEach(function(doc) {
+                      let assignment = app.assignments.filter(x => x.id == doc.data().assignmentId)[0];
+                      if (!assignment.reviews) assignment.reviews = 0;
+                      assignment.reviews += 1;
+                  });
+              })
+              .catch(function(error) {
+                  console.log("Error getting documents: ", error);
+              });
+            }
+          )
         })
       }
-      store.dispatch('bindAccounts')
-      store.dispatch('bindCourses')
+      if (app.$store.state.userDetails.role == 'admin') {
+        store.dispatch('bindAccounts')
+        store.dispatch('bindCourses')
+      }
     });
+
   }
 }).$mount("#app");
