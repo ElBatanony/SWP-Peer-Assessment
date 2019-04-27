@@ -58,14 +58,7 @@ export default {
                 document.getElementById('subject').innerHTML = subject;
                 document.getElementById('assignment').innerHTML = name;
                 document.getElementById('description').innerHTML = description;
-                if(done)
-                {
-                    app.done = done.slice();
-                }
-                else
-                {
-                    app.done = [];
-                }
+
                 app.searchId = searchId;
                 getWorkWrapper();
             }
@@ -84,53 +77,35 @@ export default {
             {
                 app.ref = "";
                 app.linkz = "";
-                alert(result.data.message);
-                window.location.href = "solutions?id=" + app.searchId;
+                window.location.href = "/assignments/" + app.searchId + "?error=" + 1;
             }
             else if (result.data.message === "All works are checked")
             {
                 app.ref = "";
                 app.linkz = "";
-                alert(result.data.message);
-                window.location.href = "solutions?id=" + app.searchId;
+                window.location.href = "/assignments/" + app.searchId + "?error=" + 2;
             }
             else if (result.data.message === "No submit")
             {
                 app.ref = "";
                 app.linkz = "";
-                alert(result.data.message);
-                window.location.href = "solutions?id=" + app.searchId;
+                window.location.href = "/assignments/" + app.searchId + "?error=" + 3;
             }
             else
             {
-                app.ref = result.data.message;
-                var fileRef = firebase.storage().ref(app.ref);
-                fileRef.getDownloadURL().then(function(url) {
                 // `url` is the download URL for 'images/stars.jpg'
                 // This can be downloaded directly:
                 var a = document.getElementById("downloadLink");
-                a.download = fileRef.name;
-                app.linkz = url;
-                }).catch(function(error) {
-                // Handle any errors
-                });
+                a.download = result.data.filename;
+                app.linkz = result.data.message;
             }
         });
     }
 
     function nextWork()
     {
-        app.done.push(app.ref);
-        var db = firebase.firestore();
-        db.collection("assignments").doc(searchId).collection("users").doc(app.user.uid).update({
-            done: app.done
-        })
-        .then(function() {
-            getWorkWrapper();
-        })
-        .catch(function(error) {
-            console.error("Error update document: ", error);
-        });
+        console.log("TODO submit assessment");
+        console.log("call getWorkWrapper")
     } 
   }
 };

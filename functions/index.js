@@ -85,10 +85,12 @@ exports.getWork = functions.https.onCall((data, context) => {
                     .where("assignmentId", "==", assignemntID)
                     .get()
                     .then(function (querySnapshot) {
+                        let fname = "";
                         let ref = "";
                         let submit = false;
                         querySnapshot.forEach(function (doc) {
                             if (!(assessments.includes(doc.id) || doc.data().userId === uid)) {
+                                fname = doc.data().fileName;
                                 ref = doc.data().downloadURL;
                             }
                             if (doc.data().userId === uid) {
@@ -108,6 +110,7 @@ exports.getWork = functions.https.onCall((data, context) => {
                             };
                         }
                         return {
+                            filename: fname,
                             message: ref
                         };
                     });
