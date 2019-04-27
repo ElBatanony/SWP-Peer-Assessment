@@ -5,8 +5,10 @@
     
     <div v-for="assignment in assignments" v-if="(assignment.course == userDetails.course || isAdmin)" v-bind:key="assignment.name">
         <span class="title">{{assignment.name}} </span>
-        <v-chip color="green lighten-1">{{assignment.course}}</v-chip>
-        <v-chip color="green lighten-1">{{assignment.subject}}</v-chip>
+        <v-chip color="info">{{assignment.course}}-{{assignment.subject}}</v-chip>
+        <v-chip v-bind:color="( (assignment.reviews||0) < (assignment.minreviews||0))? 'warning' : 'success'">{{assignment.reviews || 0}}/{{assignment.minreviews|| 0}} Reviews</v-chip>
+        <v-chip color="success" v-if="assignment.submitted">Submitted</v-chip>
+        <v-chip color="error" v-if="!assignment.submitted">Not Submitted</v-chip>
 
         <v-btn small :to="'/submissions/'+assignment.id" v-if="isAdmin" class="warning">View Submissions</v-btn>
         <v-btn small :to="'/assignments/edit/'+assignment.id" v-if="userDetails.role == 'admin'" class="warning">Edit Assignment</v-btn>
@@ -21,7 +23,8 @@
 import firebase from 'firebase';
 import { mapState, mapGetters } from "vuex";
 
-let db = firebase.firestore();
+var db = firebase.firestore();
+var app;
 
 export default {
   computed: {
@@ -30,9 +33,11 @@ export default {
     'user','userDetails','assignments'
     ])
   },
+  created() {
+    app = this;
+  },
   methods: {
     createNewAssignment() {
-      console.log('hi')
       db.collection("assignments").add({
           name: 'New Assignment ' + new Date().getMilliseconds(),
           description: 'New Assignment Description',
