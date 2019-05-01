@@ -11,7 +11,7 @@ export default new Vuex.Store({
     notifications: [],
     accounts: [],
     assignments: [],
-    accounts: [],
+    submissions: [],
     courses: [],
     db: null,
     auth: null
@@ -29,6 +29,9 @@ export default new Vuex.Store({
       if (course == null)
         return bindFirestoreRef('assignments', state.db.collection('assignments'))
       return bindFirestoreRef('assignments', state.db.collection('assignments').where("course", "==", course))
+    }),
+    bindSubmissions: firestoreAction(({ bindFirestoreRef, state }) => {
+      return bindFirestoreRef('submissions', state.db.collection('submissions'))
     }),
     bindUserDetails: firestoreAction(({ bindFirestoreRef, state }, user) => {
       return bindFirestoreRef('userDetails', state.db.collection('users').doc(user.uid))
