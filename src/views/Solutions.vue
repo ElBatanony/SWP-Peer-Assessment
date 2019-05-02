@@ -15,7 +15,10 @@
       ref="fileInput"
     />
 
-    <div v-if="uploadedSubmission">File uploaded: {{uploadedSubmission.fileName}}</div>
+    <div v-if="uploadedSubmission">
+      <p>File uploaded: {{uploadedSubmission.fileName}}</p>
+      <v-btn @click="downloadSubmission" class="success">Download Submission</v-btn>  
+    </div>
 
     <v-btn @click="$refs.fileInput.click()" class="info">Choose File</v-btn>
     <v-btn @click="uploadFile" class="info">Upload File</v-btn>
@@ -46,6 +49,7 @@
 import firebase from "firebase";
 import { mapState, mapGetters } from "vuex";
 import { constants } from 'crypto';
+import axios from "axios";
 
 var db = firebase.firestore();
 var storageRef = firebase.storage().ref();
@@ -98,6 +102,10 @@ export default {
               })
               .then(function() {
                 console.log("Document successfully written!");
+                app.assignment.fileName = app.selectedFile.name;
+                app.assignment.downloadURL = downloadURL;
+                app.uploadedSubmission = app.assignment;
+                app.selectedFile = null;
               })
               .catch(function(error) {
                 console.error("Error writing document: ", error);
@@ -108,10 +116,29 @@ export default {
 
       return;
     },
+
+    downloadSubmission() {
+      console.log(app.uploadedSubmission.downloadURL);
+      axios({
+        url: app.uploadedSubmission.downloadURL,
+        method: "GET",
+        responseType: "blob" // important
+      })
+        .then(response => {
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", this.uploadedSubmission.fileName);
+          document.body.appendChild(link);
+          link.click();
+        })
+        .catch(function(error) {
+          console.log("Error download document:", error);
+        });
+    },
     onFileSelected(event) {
       this.selectedFile = event.target.files[0];
-    },
-    downloadSubmission() {}
+    }
   },
   created() {
     app = this;
@@ -141,24 +168,15 @@ export default {
       router.push("/assignments");
       return;
     }
-    
-    app.db.collection("submissions").where(
-      "userId", "==", app.user.uid).where("assignmentId", "==", app.assignment.id
-    ).get()
-    .then(querySnapshot => {
-      querySnapshot.forEach(doc => {
-        app.uploadedSubmission = doc.data();
-      });
-    });
+
+    app.uploadedSubmission = app.assignment;
 
     app.db.collection("assessments").where(
       "submissionId", "==", app.assignment.id + '-' + app.user.uid).get()
       .then(querySnapshot => {
-        console.log("Hello assessments");
         querySnapshot.forEach(doc => {
           app.assessments.push(doc.data());
         });
-        console.log(app.assessments);
       });
   }
 };
