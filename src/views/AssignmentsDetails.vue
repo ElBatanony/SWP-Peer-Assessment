@@ -1,32 +1,90 @@
 <template>
   <div v-if="assignment">
-    <v-btn class="info" :to="'/submissions/'+assignment.id">View Submissions</v-btn>
-    <h1 class="heading">Edit Assignment</h1>
-    <v-text-field label="Name" v-model="assignment.name" placholder="Name of assignment"></v-text-field>
-    <v-textarea label="Description" v-model="assignment.description" placeholder="Assignment description"></v-textarea>
-    <v-select :items="coursesIds" label="Course" v-model="assignment.course"></v-select>
-    <v-select :items="getSubjects" label="Subject" v-model="assignment.subject"></v-select>
-    <v-date-picker v-model="deadlineDate" color="success ma-3"></v-date-picker>
-    <v-time-picker v-model="deadlineTime" color="success ma-3"></v-time-picker>
-    <br>
-    <v-btn @click="deleteAssignment" class="error">Delete Assignment</v-btn>
-    <v-btn @click="updateAssignment" class="success">Save Changes</v-btn>   
-    <hr>
-    <h1 class="heading">Review</h1>
-    <div v-for="(field, index) in assignment.reviewFields" v-bind:key="index" >
-      <v-text-field label="Field name" v-model="field.name" readonly></v-text-field>
-      <v-text-field label="Field type" v-model="field.type" readonly></v-text-field>
-      <v-textarea label="Field description" v-model="field.description" readonly></v-textarea>
-      <v-btn @click="deleteReviewField(index)" class="error">Delete field</v-btn>
-      <v-btn @click="moveFieldUp(index)" v-if="index > 0" class="success">Move up</v-btn>
-    </div>
-    <hr>
-    <div>
-      <v-text-field label="Field name" v-model="addReviewFieldName" placeholder="Enter the name of the field"></v-text-field>
-      <v-select :items="typesArr" label="Type" v-model="addReviewFieldTypeIndex"></v-select>
-      <v-textarea label="Field description" v-model="addReviewFieldDescription" placeholder="Enter the description of the field"></v-textarea>
-      <v-btn @click="addField" class="success">Add field</v-btn>
-    </div>
+
+    <v-layout class="justify-center mb-2">
+        <v-btn class="info" :to="'/submissions/'+assignment.id">View Submissions</v-btn>
+    </v-layout>
+
+    <v-layout justify-center>
+      <v-flex xs12 sm10 md8 lg6>
+        <v-card ref="form">
+          <v-card-text>
+            <v-text-field
+              ref="name"
+              v-model="assignment.name"
+              :rules="[() => !!assignment.name || 'This field is required']"
+              :error-messages="errorMessages"
+              label="Name" required placholder="Name of assignment" color="success"
+            ></v-text-field>
+            <v-textarea ref="description"
+              v-model="assignment.description" label="Description"
+              readonly placholder="Description of assignment" color="success"
+            ></v-textarea>
+            <v-select ref="course" :items="coursesIds" label="Course" color="success" v-model="assignment.course"></v-select>
+            <v-select ref="subject" :items="getSubjects" label="Subject" color="success" v-model="assignment.subject"></v-select>
+            <v-date-picker v-model="deadlineDate" color="success" full-width landscape></v-date-picker> <br>
+            <v-time-picker v-model="deadlineTime" color="success" full-width landscape></v-time-picker> <br>
+
+            <v-divider class="mt-2 mb-2"></v-divider>
+
+            <h1 class="heading">Review Criteria</h1>
+
+            <v-list two-line>
+              <template v-for="(field, index) in assignment.reviewFields">
+                <v-list-tile :key="field.name+field.description" >
+
+                  <v-list-tile-content>
+                    <v-list-tile-title>{{ field.name }}</v-list-tile-title>
+                    <v-list-tile-sub-title>{{ field.description }}</v-list-tile-sub-title>
+                  </v-list-tile-content>
+
+                  <v-list-tile-action>
+                    <v-list-tile-action-text>{{ field.type }}</v-list-tile-action-text>
+                    <v-layout>
+                      <v-flex><v-btn flat icon color="info" @click="moveFieldUp(index)" v-if="index > 0">
+                        <v-icon>arrow_upward</v-icon>
+                      </v-btn></v-flex>
+                      <v-flex><v-btn flat icon color="error" @click="deleteReviewField(index)">
+                        <v-icon>delete</v-icon>
+                      </v-btn></v-flex>
+                    </v-layout>
+                    
+                  </v-list-tile-action>
+
+                </v-list-tile>
+                <v-divider v-if="index + 1 < assignment.reviewFields.length" :key="index" ></v-divider>
+              </template>
+            </v-list>
+
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-text>
+            <v-layout class="justify-space-between">
+              <v-flex class="px-1"> <v-text-field color="info" label="Field name" v-model="newField.name"></v-text-field> </v-flex>
+              <v-flex class="px-1"> <v-select color="info" :items="typesArr" label="Field Type" v-model="newField.type"></v-select> </v-flex>
+              
+            </v-layout>
+            <v-layout class="">
+              <v-flex class="px-1"> <v-text-field color="info" label="Field description" v-model="newField.description"></v-text-field> </v-flex>
+              <v-flex class="px-1 text-xs-right"> <v-btn color="info"  @click="addField">Add new field</v-btn> </v-flex>
+            </v-layout>
+          </v-card-text>
+
+          <v-divider class="mt-2"></v-divider>
+
+          <v-card-actions>
+            <v-btn flat @click="$router.push('/assignments')">Cancel</v-btn>
+            
+            <v-spacer></v-spacer>
+            <v-btn color="error" flat @click="deleteAssignment">Delete Assignment</v-btn>
+            <v-btn color="success" flat @click="updateAssignment">Save Changes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-flex>
+    </v-layout>
+
   </div>    
 </template>
 
@@ -39,12 +97,13 @@ var app;
 export default {
   data: function() {
     return {
+      assignment : null,
       deadlineDate : null,
       deadlineTime : null,
-      addReviewFieldName: null,
-      addReviewFieldTypeIndex: null,
-      addReviewFieldDescription: null,
-      typesArr: ['Text', 'Multiline text']
+      newField: {type: 'Text'},
+      typesArr: ['Text', 'Multiline text'],
+      errorMessages: [],
+      formHasErrors: false,
     };
   },
   methods: {
@@ -78,7 +137,6 @@ export default {
       deadline.setMinutes(this.deadlineTime.split(':')[1])
 
       let router = this.$router
-      console.log(this.assignment.reviewFields);
       return this.db
         .collection("assignments")
         .doc(this.assignment.id)
@@ -97,11 +155,6 @@ export default {
           console.error("Error updating assignment info: ", error);
         });
     },
-    getDeadline: function() {
-      var date = new Date();
-      date.setTime(this.deadline);
-      return date.toString();
-    },
     deleteReviewField: (index) => {
       app.assignment.reviewFields.splice(index, 1);
     },            
@@ -114,39 +167,17 @@ export default {
       }
     },
     addField: () => {
-      if (app.checkAddedField()) {
         app.assignment.reviewFields.push({
-            name: app.addReviewFieldName, 
-            type: app.addReviewFieldTypeIndex,
-            description: app.addReviewFieldDescription
+            name: app.newField.name, 
+            type: app.newField.type,
+            description: app.newField.description
         });
-        app.addReviewFieldName = null;
-        app.addReviewFieldTypeIndex = null;
-        app.addReviewFieldDescription = null;
-      }
-    },  
-    checkAddedField: () => {
-      if(app.addReviewFieldName
-          && app.addReviewFieldTypeIndex
-          && app.addReviewFieldDescription) 
-      {
-        return true;
-      }
-
-      app.addFieldErrors = [];
-
-      if (!app.addReviewFieldName) {
-          app.addFieldErrors.push("Name of the field required");
-      }
-      if (!app.addReviewFieldTypeIndex) {
-          app.addFieldErrors.push("Type of the field required");
-      }
-      if (!app.addReviewFieldDescription) {
-          app.addFieldErrors.push("Description of the field required");
-      }
-
-      return false;
+        app.newField = {type: 'Text'}
     },
+    pad(x,c,n) {
+      while( x.length < n ) x = c+x;
+      return x; 
+    }
     
   },
   computed: {
@@ -159,17 +190,24 @@ export default {
       return ret;
     },
     getSubjects() {
-        if (!this.courses) return null;
+      if (!this.courses) return null;
       for (let i = 0; i < this.courses.length; i++) {
         if (this.courses[i].id == this.assignment.course)
           return this.courses[i].subjects;
       }
       return null;
+    },
+    form() {
+      return {
+        name: this.assignment.name,
+        description: this.assignment.description,
+        course: this.assignment.course,
+        subject: this.assignment.subject
+      };
     }
   },
   created() {
     app = this;
-    if (!this.assignment) this.assignment = {}
     this.id = this.$route.params.id;
     this.assignment = this.assignments.filter( x => x.id == this.id )[0];
     if (!this.assignment) {
@@ -177,9 +215,10 @@ export default {
       this.$router.push("/assignments");
       return;
     }
-    let deadline = new Date(this.assignment.deadline)
-    this.deadlineDate = `${deadline.getFullYear() }-${deadline.getMonth()}-${deadline.getDate()}`
-    //this.deadlineTime = `${deadline.getHours() }-${deadline.getMinutes()}`
+    let deadline = new Date();
+    if ( this.assignment.deadline ) deadline = new Date( this.assignment.deadline )
+    this.deadlineDate = deadline.toISOString().substr(0, 10)
+    this.deadlineTime = `${ this.pad( ''+deadline.getHours(), '0', 2) }:${ this.pad( ''+deadline.getMinutes(), '0', 2) }`
   }
 };
 </script>
