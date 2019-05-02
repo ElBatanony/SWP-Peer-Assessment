@@ -10,7 +10,7 @@
 
         <v-list two-line>
           <template v-for="(submission, index) in submissions">
-            <v-list-tile :key="submission.userId" :to="`/assessments/'${submission.assignmentId}/${submission.userId}`" >
+            <v-list-tile :key="submission.userId" :to="`/assessments/${submission.assignmentId}/${submission.userId}`" >
 
               <v-list-tile-content>
                 <v-list-tile-title>{{ submission.username }}</v-list-tile-title>
