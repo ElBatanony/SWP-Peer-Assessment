@@ -14,20 +14,38 @@
       @change="onFileSelected"
       ref="fileInput"
     />
+
+    <div v-if="uploadedSubmission">File uploaded: {{uploadedSubmission.fileName}}</div>
+
     <v-btn @click="$refs.fileInput.click()" class="info">Choose File</v-btn>
     <v-btn @click="uploadFile" class="info">Upload File</v-btn>
 
     <br />
     <div v-if="selectedFile">File selected: {{ selectedFile.name }}</div>
 
-        <v-btn to="/" class="warning">Assess other students' work</v-btn>
+    <v-btn to="/" class="warning">Assess other students' work</v-btn>
 
+    <div v-if="assessments.length > 0">
+      <div>
+        <br>
+        <h1>Assessments</h1>
+        <div v-for="(field, index) in assessments[assessmentsPage-1].fields" v-bind:key="index">
+          <br>
+          <p>{{field.name}}</p>
+          <p>{{field.description}}</p>
+          <v-text-field label="Field type" v-if="field.type == 'Text'" v-model="field.type" readonly></v-text-field>
+          <v-textarea v-else label="Review" v-model="field.value" readonly></v-textarea>
+        </div>
+      </div>
+      <v-pagination v-model="assessmentsPage" :length="assessments.length" :total-visible=10></v-pagination>
     </div>
+  </div>
 </template>
 
 <script>
 import firebase from "firebase";
 import { mapState, mapGetters } from "vuex";
+import { constants } from 'crypto';
 
 var db = firebase.firestore();
 var storageRef = firebase.storage().ref();
@@ -41,7 +59,9 @@ export default {
       deadline: null,
       isAssignmentEnded: false,
       selectedFile: null,
-      uploadedSubmission: null
+      uploadedSubmission: null,
+      assessments: [],
+      assessmentsPage: 1
     };
   },
   methods: {
@@ -98,7 +118,7 @@ export default {
   },
   computed: {
     ...mapGetters(["isAdmin"]),
-    ...mapState(["user", "userDetails", "assignments"])
+    ...mapState(["user", "userDetails", "assignments", "db"])
   },
   mounted: () => {
     let searchId = app.$route.params.assignmentId;
@@ -121,6 +141,25 @@ export default {
       router.push("/assignments");
       return;
     }
+    
+    app.db.collection("submissions").where(
+      "userId", "==", app.user.uid).where("assignmentId", "==", app.assignment.id
+    ).get()
+    .then(querySnapshot => {
+      querySnapshot.forEach(doc => {
+        app.uploadedSubmission = doc.data();
+      });
+    });
+
+    app.db.collection("assessments").where(
+      "submissionId", "==", app.assignment.id + '-' + app.user.uid).get()
+      .then(querySnapshot => {
+        console.log("Hello assessments");
+        querySnapshot.forEach(doc => {
+          app.assessments.push(doc.data());
+        });
+        console.log(app.assessments);
+      });
   }
 };
 </script>

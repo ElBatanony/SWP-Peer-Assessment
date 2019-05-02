@@ -52,9 +52,9 @@ let app = new Vue({
     
   },
   mounted() {
-    this.$store.state.db = this.db
-    this.$store.state.storage = this.storage
-    this.$store.state.auth = this.auth
+    this.$store.state.db = this.db;
+    this.$store.state.storage = this.storage;
+    this.$store.state.auth = this.auth;
     firebase.auth().onAuthStateChanged(function (user) {
       app.$store.state.user = user;
       if (user) {
