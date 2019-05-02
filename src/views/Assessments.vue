@@ -97,6 +97,7 @@ export default {
       .where("submissionId", "==", this.assignmentId + "-" + this.userId)
       .get()
       .then(function(querySnapshot) {
+        app.assessments = [];
         querySnapshot.forEach(function(doc) {
           app.assessments.push( {
               id: doc.id,
