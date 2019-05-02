@@ -14,44 +14,21 @@
       @change="onFileSelected"
       ref="fileInput"
     />
-
-    <div v-if="uploadedSubmission">
-      <p>File uploaded: {{uploadedSubmission.fileName}}</p>
-      <v-btn @click="downloadSubmission" class="success">Download Submission</v-btn>  
-    </div>
-
     <v-btn @click="$refs.fileInput.click()" class="info">Choose File</v-btn>
     <v-btn @click="uploadFile" class="info">Upload File</v-btn>
 
     <br />
     <div v-if="selectedFile">File selected: {{ selectedFile.name }}</div>
-
-    <v-btn to="/" class="warning">Assess other students' work</v-btn>
-
-    <div v-if="assessments.length > 0">
-      <div>
-        <br>
-        <h1>Assessments</h1>
-        <div v-for="(field, index) in assessments[assessmentsPage-1].fields" v-bind:key="index">
-          <br>
-          <p>{{field.name}}</p>
-          <p>{{field.description}}</p>
-          <v-text-field label="Field type" v-if="field.type == 'Text'" v-model="field.type" readonly></v-text-field>
-          <v-textarea v-else label="Review" v-model="field.value" readonly></v-textarea>
-        </div>
-      </div>
-      <v-pagination v-model="assessmentsPage" :length="assessments.length" :total-visible=10></v-pagination>
+    <div v-if="selectedFile">File selected: {{ selectedFile.name }}</div>
+    <v-btn @click="review" class="info">Assess other students' work</v-btn>
     </div>
-  </div>
 </template>
 
 <script>
-import firebase from "firebase";
-import { mapState, mapGetters } from "vuex";
-import { constants } from 'crypto';
-import axios from "axios";
+  import firebase from "firebase";
+  import {mapGetters, mapState} from "vuex";
 
-var db = firebase.firestore();
+  var db = firebase.firestore();
 var storageRef = firebase.storage().ref();
 var app;
 
@@ -63,9 +40,7 @@ export default {
       deadline: null,
       isAssignmentEnded: false,
       selectedFile: null,
-      uploadedSubmission: null,
-      assessments: [],
-      assessmentsPage: 1
+      uploadedSubmission: null
     };
   },
   methods: {
@@ -102,10 +77,6 @@ export default {
               })
               .then(function() {
                 console.log("Document successfully written!");
-                app.assignment.fileName = app.selectedFile.name;
-                app.assignment.downloadURL = downloadURL;
-                app.uploadedSubmission = app.assignment;
-                app.selectedFile = null;
               })
               .catch(function(error) {
                 console.error("Error writing document: ", error);
@@ -114,38 +85,23 @@ export default {
         }
       );
 
-      return;
-    },
 
-    downloadSubmission() {
-      console.log(app.uploadedSubmission.downloadURL);
-      axios({
-        url: app.uploadedSubmission.downloadURL,
-        method: "GET",
-        responseType: "blob" // important
-      })
-        .then(response => {
-          const url = window.URL.createObjectURL(new Blob([response.data]));
-          const link = document.createElement("a");
-          link.href = url;
-          link.setAttribute("download", this.uploadedSubmission.fileName);
-          document.body.appendChild(link);
-          link.click();
-        })
-        .catch(function(error) {
-          console.log("Error download document:", error);
-        });
+    },
+    review() {
+      let router = app.$router;
+      router.push("/review/" + this.assignment.id);
     },
     onFileSelected(event) {
       this.selectedFile = event.target.files[0];
-    }
+    },
+    downloadSubmission() {}
   },
   created() {
     app = this;
   },
   computed: {
     ...mapGetters(["isAdmin"]),
-    ...mapState(["user", "userDetails", "assignments", "db"])
+    ...mapState(["user", "userDetails", "assignments"])
   },
   mounted: () => {
     let searchId = app.$route.params.assignmentId;
@@ -165,19 +121,9 @@ export default {
     app.assignment = app.assignments.filter(x => x.id == searchId)[0];
     if (app.assignment == null) {
       console.log("No such assignment!");
-      router.push("/assignments");
-      return;
+      //router.push("/assignments");
+
     }
-
-    app.uploadedSubmission = app.assignment;
-
-    app.db.collection("assessments").where(
-      "submissionId", "==", app.assignment.id + '-' + app.user.uid).get()
-      .then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-          app.assessments.push(doc.data());
-        });
-      });
   }
 };
 </script>
