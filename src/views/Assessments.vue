@@ -1,50 +1,88 @@
 <template>
   <div>
-    <h1 class="subtitle is-2" v-if="user">Work by {{ author }}</h1>
-    <v-btn
-      id="downloadLink"
-      class="success"
-      @click="downloadWork"
-      target="_blank"
-      >Download the work</v-btn
-    >
+    <v-layout row>
+      <v-flex >
+        <v-card class="mb-2">
+          <v-toolbar color="success" dark>
+            <v-toolbar-title v-if="submission">Assessments for {{submission.username}}</v-toolbar-title>
+          </v-toolbar>
 
-    <p>Reviews</p>
-    <div id="reviews"></div>
+          <v-list two-line>
+            <template v-for="(assessment, index) in assessments">
+              <v-list-tile :key="assessment.userId" :to="`/assessments/${assessment.id}`" >
+
+                <v-list-tile-content>
+                  <v-list-tile-title>By {{ assessment.username }}</v-list-tile-title>
+                </v-list-tile-content>
+
+                <v-list-tile-action>
+                  <v-icon>arrow_forward</v-icon>
+                </v-list-tile-action>
+
+              </v-list-tile>
+              <v-divider v-if="index + 1 < assessments.length" :key="index" ></v-divider>
+            </template>
+          </v-list>
+        </v-card>
+        <v-layout class="justify-center" v-if="submission">
+          <v-btn class="info" :href="fileurl" target="_blank" :download="(submission.fileName)">Download Submission</v-btn>
+        </v-layout>
+      </v-flex>
+      
+    </v-layout> 
   </div>
 </template>
 
 <script>
-import { mapState, mapGetters } from "vuex";
+import { mapState } from "vuex";
 import axios from "axios";
+import firebase from 'firebase';
+
+var db = firebase.firestore();
+var storage = firebase.storage();
+var app;
 
 export default {
+  data : function () {
+    return {
+      assignmentId: '',
+      userId: '',
+      assignment: null,
+      submission: null,
+      assessments: [],
+      fileurl: ''
+    }
+  },
   computed: {
-    ...mapGetters(["isAdmin"]),
-    ...mapState(["user", "userDetails", "assignments", "db", "storage"])
+    ...mapState(["user", "userDetails", "assignments"])
   },
   created() {
+    app = this;
     this.assignmentId = this.$route.params.assignmentId;
     this.userId = this.$route.params.userId;
     this.assignment = this.assignments.filter(
       x => x.id == this.assignmentId
     )[0];
-    this.author = "";
-    this.link = "";
-    this.filename = "";
-    let storage = this.storage;
-    let app = this;
 
-    this.db
+    db
       .collection("submissions")
       .doc(this.assignmentId + "-" + this.userId)
       .get()
       .then(function(doc) {
         if (doc.exists) {
-          app.author = doc.data().username;
-          app.link = doc.data().downloadURL;
-          app.filename = doc.data().fileName;
-          console.log("got file");
+          app.submission = doc.data();
+
+          axios({
+            url: app.submission.downloadURL,
+            method: "GET",
+            responseType: "blob" // important
+          })
+          .then(response => {
+            app.fileurl = window.URL.createObjectURL(new Blob([response.data]));
+          })
+          .catch(function(error) {
+            console.log("Error download document:", error);
+          });
         } else {
           // doc.data() will be undefined in this case
           console.log("No such document!");
@@ -54,44 +92,22 @@ export default {
         console.log("Error getting document:", error);
       });
 
-    this.db
+    db
       .collection("assessments")
       .where("submissionId", "==", this.assignmentId + "-" + this.userId)
       .get()
       .then(function(querySnapshot) {
-        var subm = document.getElementById("reviews");
+        app.assessments = [];
         querySnapshot.forEach(function(doc) {
-          subm.innerHTML +=
-            "<a href='/assessments/" +
-            doc.id +
-            "'>Review by " +
-            doc.data().author +
-            "</a><br>";
+          app.assessments.push( {
+              id: doc.id,
+              ...doc.data()
+            });
         });
       })
       .catch(function(error) {
         console.log("Error getting document:", error);
       });
-  },
-  methods: {
-    downloadWork() {
-      axios({
-        url: this.link,
-        method: "GET",
-        responseType: "blob" // important
-      })
-        .then(response => {
-          const url = window.URL.createObjectURL(new Blob([response.data]));
-          const link = document.createElement("a");
-          link.href = url;
-          link.setAttribute("download", this.filename);
-          document.body.appendChild(link);
-          link.click();
-        })
-        .catch(function(error) {
-          console.log("Error download document:", error);
-        });
-    }
   }
 };
 </script>
