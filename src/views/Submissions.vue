@@ -5,7 +5,7 @@
     <v-flex >
       <v-card class="mb-2">
          <v-toolbar color="success" dark>
-          <v-toolbar-title>{{assignment.name}} submissions</v-toolbar-title>
+          <v-toolbar-title v-if="assignment">{{assignment.name}} submissions</v-toolbar-title>
         </v-toolbar>
 
         <v-list two-line>
