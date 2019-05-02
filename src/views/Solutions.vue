@@ -19,17 +19,16 @@
 
     <br />
     <div v-if="selectedFile">File selected: {{ selectedFile.name }}</div>
-
-        <v-btn to="/" class="warning">Assess other students' work</v-btn>
-
+    <div v-if="selectedFile">File selected: {{ selectedFile.name }}</div>
+    <v-btn @click="review" class="info">Assess other students' work</v-btn>
     </div>
 </template>
 
 <script>
-import firebase from "firebase";
-import { mapState, mapGetters } from "vuex";
+  import firebase from "firebase";
+  import {mapGetters, mapState} from "vuex";
 
-var db = firebase.firestore();
+  var db = firebase.firestore();
 var storageRef = firebase.storage().ref();
 var app;
 
@@ -86,7 +85,11 @@ export default {
         }
       );
 
-      return;
+
+    },
+    review() {
+      let router = app.$router;
+      router.push("/review/" + this.assignment.id);
     },
     onFileSelected(event) {
       this.selectedFile = event.target.files[0];
@@ -118,8 +121,8 @@ export default {
     app.assignment = app.assignments.filter(x => x.id == searchId)[0];
     if (app.assignment == null) {
       console.log("No such assignment!");
-      router.push("/assignments");
-      return;
+      //router.push("/assignments");
+
     }
   }
 };
