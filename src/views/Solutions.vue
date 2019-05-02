@@ -15,7 +15,7 @@
       ref="fileInput"
     />
 
-    <div v-if="uploadedSubmission">
+    <div v-if="uploadedSubmission.submitted">
       <p>File uploaded: {{uploadedSubmission.fileName}}</p>
       <v-btn @click="downloadSubmission" class="success">Download Submission</v-btn>  
     </div>
