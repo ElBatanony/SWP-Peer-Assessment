@@ -13,7 +13,7 @@
 
         <v-list two-line>
           <template v-for="(account, index) in searchedAccounts">
-            <v-list-tile :key="account.title" @click="$router.push('users/'+account.id)" >
+            <v-list-tile :key="account.id" @click="$router.push('users/'+account.id)" >
 
               <v-list-tile-content>
                 <v-list-tile-title>{{ account.name }}</v-list-tile-title>

@@ -1,22 +1,37 @@
 <template>
-  <div>
+  <v-layout row>
+    <v-flex >
+      <v-card class="mb-2">
+        <v-list two-line>
+          <template v-for="(assignment, index) in assignments">
+            <v-list-tile :key="assignment.id" :to="'/assignments/'+ (isAdmin?'edit/':'') + assignment.id" >
+
+              <v-list-tile-content>
+                <v-list-tile-title>{{ assignment.name }}</v-list-tile-title>
+                <v-list-tile-sub-title class="text--primary">{{ assignment.course }} {{ assignment.subject }}</v-list-tile-sub-title>
+                <div v-if="!isAdmin">
+                  <v-list-tile-sub-title v-if="assignment.submitted"> <span class="success--text">Submitted</span> </v-list-tile-sub-title>
+                  <v-list-tile-sub-title v-else> <span class="error--text">Not Submitted</span> </v-list-tile-sub-title>
+                </div>
+              </v-list-tile-content>
+
+              <v-list-tile-action>
+                <v-list-tile-action-text v-if="!isAdmin">{{assignment.reviews||0}}/{{assignment.minreviews||0}} reviewed</v-list-tile-action-text>
+                <v-icon>arrow_forward</v-icon>
+              </v-list-tile-action>
+
+            </v-list-tile>
+            <v-divider v-if="index + 1 < assignments.length" :key="index" ></v-divider>
+          </template>
+        </v-list>
+      </v-card>
+      <v-layout class="justify-center">
+        <v-btn v-if="isAdmin" class="info" @click="createNewAssignment">Add Assignment</v-btn>
+      </v-layout>
       
-    <h1 class="headline">Assignments</h1>
-    
-    <div v-for="assignment in assignments" v-if="(assignment.course == userDetails.course || isAdmin)" v-bind:key="assignment.name">
-        <span class="title">{{assignment.name}} </span>
-        <v-chip color="info">{{assignment.course}}-{{assignment.subject}}</v-chip>
-        <v-chip v-if="!isAdmin" v-bind:color="( (assignment.reviews||0) < (assignment.minreviews||0))? 'warning' : 'success'">{{assignment.reviews || 0}}/{{assignment.minreviews|| 0}} Reviews</v-chip>
-        <v-chip color="success" v-if="!isAdmin && assignment.submitted">Submitted</v-chip>
-        <v-chip color="error" v-if="!isAdmin && !assignment.submitted">Not Submitted</v-chip>
+    </v-flex>
 
-        <v-btn small :to="'/submissions/'+assignment.id" v-if="isAdmin" class="warning">View Submissions</v-btn>
-        <v-btn small :to="'/assignments/edit/'+assignment.id" v-if="isAdmin" class="warning">Edit Assignment</v-btn>
-        <v-btn small :to="'/assignments/'+assignment.id" v-if="!isAdmin" class="warning">View Assignment</v-btn>
-    </div>
-
-    <v-btn v-if="userDetails.role == 'admin'" class="info" v-on:click="createNewAssignment">Add Assignment</v-btn>
-  </div>    
+  </v-layout> 
 </template>
 
 <script>

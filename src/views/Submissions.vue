@@ -1,14 +1,34 @@
 <template>
   <div>
-    <div v-if="assignment">
-      <h1 class="heading">{{ assignment.name }}</h1>
-      <p class="subheading">{{ assignment.description }}</p>
-    </div>
+    
+    <v-layout row>
+    <v-flex >
+      <v-card class="mb-2">
+         <v-toolbar color="success" dark>
+          <v-toolbar-title>{{assignment.name}} submissions</v-toolbar-title>
+        </v-toolbar>
 
-    <h3 class="subtitle">List of submissions</h3>
-    <div v-for="submission in submissions" v-bind:key="submission.userId">
-      {{ submission.userId }}
-    </div>
+        <v-list two-line>
+          <template v-for="(submission, index) in submissions">
+            <v-list-tile :key="submission.userId" :to="`/assessments/${submission.assignmentId}/${submission.userId}`" >
+
+              <v-list-tile-content>
+                <v-list-tile-title>{{ submission.username }}</v-list-tile-title>
+                <v-list-tile-sub-title class="text--primary">{{ submission.fileName }}</v-list-tile-sub-title>
+              </v-list-tile-content>
+
+              <v-list-tile-action>
+                <v-icon>arrow_forward</v-icon>
+              </v-list-tile-action>
+
+            </v-list-tile>
+            <v-divider v-if="index + 1 < submissions.length" :key="index" ></v-divider>
+          </template>
+        </v-list>
+      </v-card>
+    </v-flex>
+
+  </v-layout> 
   </div>
 </template>
 
