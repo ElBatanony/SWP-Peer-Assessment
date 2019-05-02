@@ -86,12 +86,16 @@ exports.getWork = functions.https.onCall((data, context) => {
                     .get()
                     .then(function (querySnapshot) {
                         let fname = "";
+                        let id = "";
                         let ref = "";
+                        let uname = "";
                         let submit = false;
                         querySnapshot.forEach(function (doc) {
                             if (!(assessments.includes(doc.id) || doc.data().userId === uid)) {
                                 fname = doc.data().fileName;
                                 ref = doc.data().downloadURL;
+                                uname = doc.data().username;
+                                id = doc.id;
                             }
                             if (doc.data().userId === uid) {
                                 submit = true;
@@ -104,13 +108,15 @@ exports.getWork = functions.https.onCall((data, context) => {
                             };
                         }
 
-                        if (ref == "") {
+                        if (ref === "") {
                             return {
                                 message: "All works are checked"
                             };
                         }
                         return {
                             filename: fname,
+                            submissionId: id,
+                            username: uname,
                             message: ref
                         };
                     });
