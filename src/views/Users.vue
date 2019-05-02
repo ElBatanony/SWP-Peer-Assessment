@@ -1,25 +1,54 @@
 <template>
-  <div>
-    <h1 class="heading">Users of the system</h1>
+    <v-layout row>
+    <v-flex >
+      <v-text-field
+            label="Find user"
+            append-icon="search"
+            color="success"
+            v-model="searchName"
+          ></v-text-field>
+      <v-card>
 
-    <div v-for="account in accounts" v-bind:key="account.id">
-      <span class="subheading">{{account.name}}</span>
-      <v-chip v-if="account.course" color="green lighten-1">{{account.course}}</v-chip>
-      <v-chip v-if="account.group" color="green lighten-1">{{account.group}}</v-chip>
-      <v-btn small :to="'/users/'+account.id" v-if="isAdmin" class="warning">Edit</v-btn>
-    </div>
+        
 
-  </div>
+        <v-list two-line>
+          <template v-for="(account, index) in searchedAccounts">
+            <v-list-tile :key="account.title" @click="$router.push('users/'+account.id)" >
+
+              <v-list-tile-content>
+                <v-list-tile-title>{{ account.name }}</v-list-tile-title>
+                <v-list-tile-sub-title class="text--primary">{{ account.email }}</v-list-tile-sub-title>
+                <v-list-tile-sub-title>{{ account.role }}</v-list-tile-sub-title>
+              </v-list-tile-content>
+
+              <v-list-tile-action>
+                <v-list-tile-action-text>{{ account.course }}-{{ account.group }}</v-list-tile-action-text>
+                <v-icon>edit</v-icon>
+              </v-list-tile-action>
+
+            </v-list-tile>
+            <v-divider v-if="index + 1 < accounts.length" :key="index" ></v-divider>
+          </template>
+        </v-list>
+      </v-card>
+    </v-flex>
+  </v-layout>
 </template>
 
 <script>
-import { mapState, mapGetters } from "vuex";
+import { mapState } from "vuex";
 export default {
+  data : function () {
+    return {
+      searchName : ''
+    }
+  },
   computed: {
-    ...mapGetters(['isAdmin']),
-    ...mapState([
-    'accounts'
-    ])
+    ...mapState(["accounts"]),
+    searchedAccounts() {
+      console.log(this.accounts)
+      return this.accounts.filter( x => x.name.toLowerCase().includes( this.searchName.toLowerCase() ) )
+    }
   }
-}
+};
 </script>
