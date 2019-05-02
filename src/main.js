@@ -52,9 +52,9 @@ let app = new Vue({
     
   },
   mounted() {
-    this.$store.state.db = this.db
-    this.$store.state.storage = this.storage
-    this.$store.state.auth = this.auth
+    this.$store.state.db = this.db;
+    this.$store.state.storage = this.storage;
+    this.$store.state.auth = this.auth;
     firebase.auth().onAuthStateChanged(function (user) {
       app.$store.state.user = user;
       if (user) {
@@ -73,7 +73,10 @@ let app = new Vue({
                   querySnapshot.forEach(function(doc) {
                       // doc.data() is never undefined for query doc snapshots
                       //console.log(doc.id, " => ", doc.data());
-                      app.assignments.filter(x => x.id == doc.data().assignmentId)[0].submitted = true;
+                      let currAssign = app.assignments.filter(x => x.id == doc.data().assignmentId)[0];
+                      currAssign.submitted = true;
+                      currAssign.fileName = doc.data().fileName;
+                      currAssign.downloadURL = doc.data().downloadURL;
                   });
               })
               .catch(function(error) {
