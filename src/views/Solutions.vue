@@ -19,16 +19,15 @@
 
     <br />
     <div v-if="selectedFile">File selected: {{ selectedFile.name }}</div>
-    <div v-if="selectedFile">File selected: {{ selectedFile.name }}</div>
     <v-btn @click="review" class="info">Assess other students' work</v-btn>
     </div>
 </template>
 
 <script>
-  import firebase from "firebase";
-  import {mapGetters, mapState} from "vuex";
+    import firebase from "firebase";
+    import {mapGetters, mapState} from "vuex";
 
-  var db = firebase.firestore();
+    var db = firebase.firestore();
 var storageRef = firebase.storage().ref();
 var app;
 
