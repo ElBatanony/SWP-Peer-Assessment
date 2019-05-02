@@ -4,7 +4,7 @@
       <v-card class="mb-2">
         <v-list two-line>
           <template v-for="(assignment, index) in assignments">
-            <v-list-tile :key="assignment.id" @click="$router.push('assignments/'+ (isAdmin?'edit/':'') +assignment.id)" >
+            <v-list-tile :key="assignment.id" :to="'/assignments/'+ (isAdmin?'edit/':'') + assignment.id" >
 
               <v-list-tile-content>
                 <v-list-tile-title>{{ assignment.name }}</v-list-tile-title>

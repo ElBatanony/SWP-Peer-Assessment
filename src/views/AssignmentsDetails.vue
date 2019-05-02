@@ -1,5 +1,6 @@
 <template>
   <div v-if="assignment">
+    <v-btn class="info" :to="'/submissions/'+assignment.id">View Submissions</v-btn>
     <h1 class="heading">Edit Assignment</h1>
     <v-text-field label="Name" v-model="assignment.name" placholder="Name of assignment"></v-text-field>
     <v-textarea label="Description" v-model="assignment.description" placeholder="Assignment description"></v-textarea>
