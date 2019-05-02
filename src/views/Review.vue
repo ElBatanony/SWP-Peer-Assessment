@@ -75,7 +75,12 @@ export default {
                 .catch(function (error) {
                     console.error("Error adding document: ", error);
                 });
+            for (let i = 0; i < app.reviewFields.length; i++) {
+                app.reviewFields[i].value = "";
+            }
             this.getWorkWrapper();
+            alert("Review has been submitted")
+
         },
         downloadWork: function () {
             axios({
@@ -98,22 +103,28 @@ export default {
         getWorkWrapper: function () {
             var getWork = firebase.functions().httpsCallable("getWork");
             getWork({assignmentID: app.searchId}).then(function (result) {
+                let router = app.$router;
                 if (result.data.message === "Assignment don't finished yet") {
                     app.ref = "";
                     app.linkz = "";
-                    window.location.href = "/assignments/" + app.searchId + "?error=" + 1;
+                    router.push("/assignments/" + app.searchId);
+                    alert("Assignment don't finished yet");
+                    //window.location.href = "/assignments/" + app.searchId + "?error=" + 1;
                 } else if (result.data.message === "All works are checked") {
                     app.ref = "";
                     app.linkz = "";
-                    window.location.href = "/assignments/" + app.searchId + "?error=" + 2;
+                    router.push("/assignments/" + app.searchId);
+                    alert("All works are checked");
+                    //window.location.href = "/assignments/" + app.searchId + "?error=" + 2;
                 } else if (result.data.message === "No submit") {
                     app.ref = "";
                     app.linkz = "";
-                    window.location.href = "/assignments/" + app.searchId + "?error=" + 3;
+                    router.push("/assignments/" + app.searchId);
+                    alert("No submit")
+                    //window.location.href = "/assignments/" + app.searchId + "?error=" + 3;
                 } else {
                     // `url` is the download URL for 'images/stars.jpg'
                     // This can be downloaded directly:
-                    console.log(result);
                     app.filename = result.data.filename;
                     app.link = result.data.message;
                     app.submissionId = result.data.submissionId;
