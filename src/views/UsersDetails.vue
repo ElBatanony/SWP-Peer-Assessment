@@ -1,28 +1,46 @@
 <template>
-  <div>
-        <h1 class="Heading">Edit User Information</h1>
-
-        <p v-if="errors.length">
-            <b>Please correct the following error(s):</b>
-            <ul>
-                <li v-for="error in errors"  v-bind:key="error">{{ error }}</li>
-            </ul>
-        </p>
-
-        <v-text-field label="Name" v-model="user.name"></v-text-field>
-        <v-text-field label="Email" v-model="user.email" readonly></v-text-field>
-
-        <v-select :items="roles" label="Role" v-model="user.role"></v-select>
-
-        <div v-if="user.role == 'student'">
-            <v-select :items="coursesIds" label="Course" v-model="user.course"></v-select>
-            <v-select :items="getGroups" label="Group" v-model="user.group"></v-select>
-        </div>
-
-    <v-btn @click="deleteUser" class="error">Delete User</v-btn>
-    <v-btn @click="updateUser" class="success">Save Changes</v-btn>   
-
-  </div>    
+  <v-layout justify-center>
+    <v-flex xs12 sm10 md8 lg6>
+      <v-card ref="form">
+        <v-card-text>
+          <v-text-field
+            ref="name"
+            v-model="user.name"
+            :rules="[() => !!user.name || 'This field is required']"
+            :error-messages="errorMessages"
+            label="Name"
+            required
+            color="success"
+          ></v-text-field>
+          <v-text-field
+            ref="email"
+            v-model="user.email"
+            label="Email"
+            readonly
+            color="success"
+          ></v-text-field>
+          <v-select
+            ref="role"
+            v-model="user.role"
+            :items="roles"
+            label="Role"
+            color="success"
+          ></v-select>
+          <div v-if="user.role == 'student'" >
+              <v-select ref="course" :items="coursesIds" label="Course" color="success" v-model="user.course"></v-select>
+              <v-select ref="group" :items="getGroups" label="Group" color="success" v-model="user.group"></v-select>
+          </div>
+        </v-card-text>
+        <v-divider class="mt-5"></v-divider>
+        <v-card-actions>
+          <v-btn flat @click="$router.push('/users')">Cancel</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="error" flat @click="deleteUser">Delete User</v-btn>
+          <v-btn color="success" flat @click="updateUser">Save Changes</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-flex>
+  </v-layout>
 </template>
 
 <script>
@@ -31,8 +49,9 @@ import { mapState, mapGetters, mapActions } from "vuex";
 export default {
   data: function() {
     return {
-      errors: [],
-      id : '',
+      errorMessages: [],
+      formHasErrors: false,
+      id: "",
       user: {},
       roles: ["student", "admin"]
     };
@@ -40,7 +59,7 @@ export default {
   methods: {
     ...mapActions(["deleteUser", "updateUser"]),
     deleteUser() {
-      let router = this.$router
+      let router = this.$router;
       this.db
         .collection("users")
         .doc(this.id)
@@ -54,17 +73,20 @@ export default {
         });
     },
     updateUser() {
+      this.formHasErrors = false;
 
-      this.errors = [];
-      if (!this.user.name) this.errors.push("Name required.");
-      if (!this.user.role) this.errors.push("Role required.");
-      if (this.user.role == "student" && !this.user.course)
-        this.errors.push("Course required");
-      if (this.user.role == "student" && !this.user.group)
-        this.errors.push("Group required");
-      if (this.error && this.error.length > 0) return;
+      let app = this;
+      Object.keys(this.form).forEach(f => {
+        if (!this.form[f]) this.formHasErrors = true;
+        this.$refs[f].validate(true);
+      });
 
-      let router = this.$router
+      if (this.formHasErrors) {
+        alert("Please input valid data");
+        return;
+      }
+
+      let router = this.$router;
 
       return this.db
         .collection("users")
@@ -75,7 +97,7 @@ export default {
           course: this.user.course,
           group: this.user.group
         })
-        .then( function() {
+        .then(function() {
           router.push("/users");
         })
         .catch(error => {
@@ -86,6 +108,15 @@ export default {
   computed: {
     ...mapGetters(["isAdmin"]),
     ...mapState(["accounts", "db", "courses"]),
+    form() {
+      return {
+        name: this.user.name,
+        email: this.user.email,
+        role: this.user.role,
+        course: this.user.course,
+        group: this.user.group
+      };
+    },
     coursesIds() {
       let ret = [];
       this.courses.forEach(course => {
@@ -94,7 +125,7 @@ export default {
       return ret;
     },
     getGroups() {
-        if (!this.courses) return null;
+      if (!this.courses) return null;
       for (let i = 0; i < this.courses.length; i++) {
         if (this.courses[i].id == this.user.course)
           return this.courses[i].groups;
@@ -105,7 +136,7 @@ export default {
   mounted() {
     this.id = this.$route.params.id;
 
-    let router = this.$router
+    let router = this.$router;
 
     this.db
       .collection("users")
@@ -113,11 +144,11 @@ export default {
       .get()
       .then(snapshot => {
         this.user = snapshot.data();
-        if (!this.user.course) this.user.course = 'None'
-        if (!this.user.group) this.user.group = 'None'
+        if (!this.user.course) this.user.course = "None";
+        if (!this.user.group) this.user.group = "None";
         if (!this.user) {
-            console.log("No such user!");
-            router.push("/users");        
+          console.log("No such user!");
+          router.push("/users");
         }
       });
   }
