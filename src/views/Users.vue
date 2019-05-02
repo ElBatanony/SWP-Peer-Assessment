@@ -46,7 +46,6 @@ export default {
   computed: {
     ...mapState(["accounts"]),
     searchedAccounts() {
-      console.log(this.accounts)
       return this.accounts.filter( x => x.name.toLowerCase().includes( this.searchName.toLowerCase() ) )
     }
   }
