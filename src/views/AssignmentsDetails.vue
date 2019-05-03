@@ -122,15 +122,6 @@ export default {
         });
     },
     updateAssignment() {
-      
-      this.errors = [];
-      if (!this.assignment.name) this.errors.push("Name required.");
-      if (!this.assignment.description) this.errors.push("Description required.");
-      if (!this.assignment.course) this.errors.push("Course required.");
-      if (!this.assignment.subject) this.errors.push("Subject required.");
-      if (!this.deadlineDate) this.errors.push("Deadline date required.");
-      if (!this.deadlineTime) this.errors.push("Deadline time required.");
-      if (this.error && this.error.length > 0) return;
 
       let deadline = new Date(this.deadlineDate)
       deadline.setHours(this.deadlineTime.split(':')[0])
