@@ -109,6 +109,7 @@ export default {
             var getWork = firebase.functions().httpsCallable("getWork");
             getWork({assignmentID: app.searchId}).then(function (result) {
                 let router = app.$router;
+                console.log(result.data)
                 if (result.data.message === "Assignment don't finished yet") {
                     app.ref = "";
                     app.linkz = "";
@@ -143,6 +144,7 @@ export default {
   },
     mounted() {
     let searchId = app.$route.params.assignmentId;
+    app.searchId = searchId
     let router = app.$router;
     app.assignment = app.assignments.filter(x => x.id == searchId)[0];
     if (app.assignment == null) {
@@ -150,6 +152,7 @@ export default {
       router.push("/assignments");
       return;
     }
+    app.getWorkWrapper();
   }
 };
 </script>
