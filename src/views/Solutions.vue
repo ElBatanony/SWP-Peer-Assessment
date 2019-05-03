@@ -1,50 +1,70 @@
 <template>
   <div>
-    <div v-if="assignment">
-      <span class="headline">{{ assignment.name }}</span>
-      <v-chip color="green lighten-1">{{ assignment.course }}</v-chip>
-      <v-chip color="green lighten-1">{{ assignment.subject }}</v-chip>
-      <p>{{ assignment.description }}</p>
-      <p class="subheading">Deadline: {{ new Date(assignment.deadline) }}</p>
-    </div>
 
-    <input
-            @change="onFileSelected"
-            ref="fileInput"
-            style="display: none"
-            type="file"
-    />
+    <input @change="onFileSelected" ref="fileInput" style="display: none" type="file"/>
 
-    <div v-if="uploadedSubmission.submitted">
-      <p>File uploaded: {{uploadedSubmission.fileName}}</p>
-      <v-btn @click="downloadSubmission" class="success">Download Submission</v-btn>  
-    </div>
+    <v-layout>
+        <v-flex xs12 sm6 offset-sm3>
+        <v-card v-if="assignment">
+            <v-card-title primary-title>
+            <div>
+                <h3 class="headline mb-0">{{assignment.name}}</h3>
+                <div> {{ assignment.course }} - {{ assignment.subject }} </div>
+                <p>Deadline: {{ new Date(assignment.deadline).toISOString().substr(0,10) }} - {{ new Date(assignment.deadline).toISOString().substr(11,5) }} </p>
+                <p v-if="uploadedSubmission.submitted">
+                    Uploaded file: {{uploadedSubmission.fileName}} 
+                    <v-btn small @click="downloadSubmission" color="info" dark>Download
+                        <v-icon dark right>cloud_download</v-icon>
+                    </v-btn>
+                </p>
+            </div>
+            </v-card-title>
 
-      <v-btn @click="$refs.fileInput.click()" class="info">Choose File</v-btn>
-    <v-btn @click="uploadFile" class="info">Upload File</v-btn>
+            <v-card-text>
+                <p class="subheading"> {{assignment.description}} </p>
+                
+                <div class="text-xs-center">
+                    <v-btn color="success" @click="$refs.fileInput.click()">Upload new submission</v-btn>
+                    <v-btn @click="review" color="warning">Assess other students' work</v-btn>
+                </div>
+                
+            </v-card-text>
 
-    <br />
-    <div v-if="selectedFile">File selected: {{ selectedFile.name }}</div>
+            <v-card-text v-if="assessments.length > 0">
 
-    <v-btn @click="review" class="info">Assess other students' work</v-btn>
+                <v-divider class="mb-2"></v-divider>
 
-      <div v-if="assessments.length > 0">
-          <div>
-              <br>
-              <h1>Assessments</h1>
-              <div v-bind:key="index" v-for="(field, index) in assessments[assessmentsPage-1].fields">
-                  <br>
-                  <h1 class="title is-2">{{field.name}}</h1>
-                  <div v-if="field.type === 'Text'">
-                      <v-text-field v-bind:label="field.description" v-model="field.value" readonly></v-text-field>
-                  </div>
-                  <div v-if="field.type === 'Multiline text'">
-                      <v-textarea v-bind:label="field.description" v-model="field.value" readonly></v-textarea>
-                  </div>
-              </div>
-          </div>
-          <v-pagination :length="assessments.length" :total-visible=10 v-model="assessmentsPage"></v-pagination>
-      </div>
+                <h1 class="headline">Assessments</h1>
+                <v-list two-line>
+                <template v-for="(field, index) in assessments[assessmentsPage-1].fields">
+                    <v-list-tile :key="field.name+field.value" >
+
+                    <v-list-tile-content>
+                        <v-list-tile-title>{{ field.name }}</v-list-tile-title>
+                        <v-list-tile-sub-title class="text--primary">{{ field.value }}</v-list-tile-sub-title>
+                    </v-list-tile-content>
+
+                    </v-list-tile>
+                    <v-divider v-if="index + 1 < assessments[assessmentsPage-1].fields.length" :key="index" ></v-divider>
+                </template>
+                </v-list>
+                <v-pagination color="info" :length="assessments.length" :total-visible=10 v-model="assessmentsPage"></v-pagination>
+
+            </v-card-text>
+
+            
+
+            <v-divider class="mt-2"></v-divider>
+
+            <v-card-actions>
+                <v-btn flat to="/">Go back</v-btn>
+            </v-card-actions>
+        </v-card>
+        </v-flex>
+    </v-layout>
+
+    
+
   </div>
 </template>
 
@@ -114,6 +134,8 @@
                                     console.error("Error writing document: ", error);
                                 });
                         });
+                        alert('File successfuly uploaded!')
+                        app.$router.push('/assignments')
                     }
                 );
 
@@ -145,6 +167,7 @@
             },
             onFileSelected(event) {
                 this.selectedFile = event.target.files[0];
+                this.uploadFile();
             }
         },
         created() {
