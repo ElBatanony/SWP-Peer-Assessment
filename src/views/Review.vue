@@ -16,8 +16,8 @@
       <br><br>
 
       <div v-bind:key="index" v-for="(field, index) in assignment.reviewFields">
-        <v-text-field outline v-if="field.type === 'Text'" :label="field.name" v-model="assignment.reviewFields[index].value"></v-text-field>
-        <v-textarea outline v-if="field.type === 'Multiline text'" :label="field.name" v-model="assignment.reviewFields[index].value"></v-textarea>
+        <v-text-field :placeholder="field.description" outline v-if="field.type === 'Text'" :label="field.name" v-model="assignment.reviewFields[index].value"></v-text-field>
+        <v-textarea :placeholder="field.description" outline v-if="field.type === 'Multiline text'" :label="field.name" v-model="assignment.reviewFields[index].value"></v-textarea>
       </div>
       
       <div class="text-xs-right">
