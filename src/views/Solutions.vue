@@ -34,11 +34,13 @@
               <h1>Assessments</h1>
               <div v-bind:key="index" v-for="(field, index) in assessments[assessmentsPage-1].fields">
                   <br>
-                  <p>{{field.name}}</p>
-                  <p>{{field.description}}</p>
-                  <v-text-field label="Field type" readonly v-if="field.type == 'Text'"
-                                v-model="field.type"></v-text-field>
-                  <v-textarea label="Review" readonly v-else v-model="field.value"></v-textarea>
+                  <h1 class="title is-2">{{field.name}}</h1>
+                  <div v-if="field.type === 'Text'">
+                      <v-text-field v-bind:label="field.description" v-model="field.value" readonly></v-text-field>
+                  </div>
+                  <div v-if="field.type === 'Multiline text'">
+                      <v-textarea v-bind:label="field.description" v-model="field.value" readonly></v-textarea>
+                  </div>
               </div>
           </div>
           <v-pagination :length="assessments.length" :total-visible=10 v-model="assessmentsPage"></v-pagination>
