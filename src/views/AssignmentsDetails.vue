@@ -18,7 +18,7 @@
             ></v-text-field>
             <v-textarea ref="description"
               v-model="assignment.description" label="Description"
-              readonly placholder="Description of assignment" color="success"
+              placholder="Description of assignment" color="success"
             ></v-textarea>
             <v-select ref="course" :items="coursesIds" label="Course" color="success" v-model="assignment.course"></v-select>
             <v-select ref="subject" :items="getSubjects" label="Subject" color="success" v-model="assignment.subject"></v-select>
