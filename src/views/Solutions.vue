@@ -48,7 +48,10 @@
                     <v-divider v-if="index + 1 < assessments[assessmentsPage-1].fields.length" :key="index" ></v-divider>
                 </template>
                 </v-list>
-                <v-pagination color="info" :length="assessments.length" :total-visible=10 v-model="assessmentsPage"></v-pagination>
+                <div class="text-xs-center">
+                    <v-pagination color="info" :length="assessments.length" :total-visible=10 v-model="assessmentsPage"></v-pagination>
+                </div>
+                
 
             </v-card-text>
 
