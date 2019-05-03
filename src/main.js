@@ -19,6 +19,8 @@ Vue.config.productionTip = false;
 
 Vue.use(Vuetify)
 
+
+
 let config = {
   apiKey: "AIzaSyBoFhrw9RehDmHHFgOV4aFi3TrBfT_PY48",
   authDomain: "swp-peer-assessment.firebaseapp.com",
@@ -82,7 +84,8 @@ let app = new Vue({
               .catch(function(error) {
                   console.log("Error getting documents: ", error);
               });
-
+              
+              
               app.db.collection('assessments').where("userId", "==", app.user.uid).get()
               .then(function(querySnapshot) {
                   querySnapshot.forEach(function(doc) {

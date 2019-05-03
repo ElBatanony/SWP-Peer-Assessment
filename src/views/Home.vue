@@ -7,7 +7,7 @@
     </div>
     
     <div v-if="userDetails">
-      <div v-if="userDetails.notifications.length > 0">
+      <div v-if="userDetails.notifications && userDetails.notifications.length > 0">
         <v-layout align-center justify-space-between row fill-height>
           <p class="headline" >Notifications</p>
           <v-btn color="info" @click="clearNotifications">Clear Notifications</v-btn>

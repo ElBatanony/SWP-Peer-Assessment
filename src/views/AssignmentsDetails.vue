@@ -136,7 +136,7 @@ export default {
           description: this.assignment.description,
           course: this.assignment.course,
           subject: this.assignment.subject,
-          reviewFields: this.assignment.reviewFields,
+          reviewFields: this.assignment.reviewFields || [],
           deadline: deadline.getTime()
         })
         .then( function() {
