@@ -5,12 +5,6 @@
         <h2 class="subtitle is-4">{{assignment.subject}}</h2>
         <p class="box subtitle">{{assignment.description}}</p>
 
-        <p v-if="errors.length"><b>Please correct the following error(s):</b>
-      <ul>
-          <li v-for="error in errors" :key="error">{{error}}</li>
-      </ul>
-      </p>
-
       <v-btn @click="downloadWork" class="info">Download the submission</v-btn>
 
       <br><br>
@@ -46,7 +40,6 @@ export default {
         submissionId: "",
         link: "",
         filename: "",
-        userId: "",
         username: "",
         assignment: null
     };
@@ -67,21 +60,23 @@ export default {
             }
         },
         submitAssessment: function () {
+            let router = app.$router;
             db.collection("assessments").add({
                 fields: app.assignment.reviewFields,
                 assignmentId: app.searchId,
                 submissionId: app.submissionId,
-                userId: app.userId,
-                username: app.username
+                userId: app.user.uid,
+                username: app.user.displayName
             })
                 .then(function (docRef) {
                     console.log("Document written with ID: ", docRef.id);
+                    router.push('/assignments')
                 })
                 .catch(function (error) {
                     console.error("Error adding document: ", error);
                 });
-            for (let i = 0; i < app.reviewFields.length; i++) {
-                app.reviewFields[i].value = "";
+            for (let i = 0; i < app.assignment.reviewFields.length; i++) {
+                app.assignment.reviewFields[i].value = "";
             }
             this.getWorkWrapper();
             alert("Review has been submitted")
