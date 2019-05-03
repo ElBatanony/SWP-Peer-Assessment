@@ -158,6 +158,7 @@ export default {
       }
     },
     addField: () => {
+        if (!app.assignment.reviewFields) app.assignment.reviewFields = []
         app.assignment.reviewFields.push({
             name: app.newField.name, 
             type: app.newField.type,
