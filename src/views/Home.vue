@@ -7,13 +7,15 @@
     </div>
     
     <div v-if="userDetails">
-      <v-layout align-center justify-space-between row fill-height>
-        <p class="headline" >Notifications</p>
-        <v-btn color="info" @click="clearNotifications">Clear Notifications</v-btn>
-      </v-layout>
-    
-      <div v-bind:key="notification" v-for="notification in userDetails.notifications">
-        <v-alert value="true" type="warning"> {{notification}} </v-alert>
+      <div v-if="userDetails.notifications.length > 0">
+        <v-layout align-center justify-space-between row fill-height>
+          <p class="headline" >Notifications</p>
+          <v-btn color="info" @click="clearNotifications">Clear Notifications</v-btn>
+        </v-layout>
+      
+        <div v-bind:key="notification" v-for="notification in userDetails.notifications">
+          <v-alert value="true" type="warning"> {{notification}} </v-alert>
+        </div>
       </div>
     </div>
 
